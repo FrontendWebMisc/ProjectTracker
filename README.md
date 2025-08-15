@@ -9,6 +9,7 @@ This is a simple, yet powerful, single-page application for tracking the daily a
 *   **Real-time Dashboard:** Live statistics on team status (Active, Blocked, Partially Blocked, In Review).
 *   **Team Member Management:** Easily add and remove team members.
 *   **Individual Progress Tracking:** Track what each team member did yesterday, is doing today, any blockers they have, and any additional notes.
+*   **Task Tracking:** Track individual tasks for each team member with status and issue details.
 *   **Status Tracking:** Set a status for each team member (Active, Blocked, Partially Blocked, In Review).
 *   **AI-Ready Summaries:** Generate detailed daily and weekly summaries with a single click. The summaries are formatted to be easily pasted into an AI for further analysis.
 *   **Data Management:**
@@ -26,9 +27,11 @@ This is a simple, yet powerful, single-page application for tracking the daily a
 2.  The application will be pre-populated with sample data. You can clear this data by clicking the "Clear Today" button.
 3.  Add your team members using the "Add Member" button.
 4.  Update the status and progress for each team member throughout the day.
-5.  At the end of the day, click "Save Today's Data" to download a JSON file of the day's progress. It is recommended to create a `team-data` folder to store these files.
-6.  To generate a daily summary, click the "Daily Summary" button. You can then copy the summary to your clipboard or export it as a text file.
-7.  To generate a weekly summary, click the "Weekly Summary" button, load the daily JSON files for the week, and then click "Generate".
+5.  Add tasks for each team member using the "Add Task" button in their section.
+6.  Set task status (Active, Partially Blocked, Blocked, In Review, Completed) and add issue details when needed.
+7.  At the end of the day, click "Save Today's Data" to download a JSON file of the day's progress. It is recommended to create a `team-data` folder to store these files.
+8.  To generate a daily summary, click the "Daily Summary" button. You can then copy the summary to your clipboard or export it as a text file.
+9.  To generate a weekly summary, click the "Weekly Summary" button, load the daily JSON files for the week, and then click "Generate".
 
 ## Customization
 
@@ -46,6 +49,7 @@ function initializeSampleData() {
             today: '',
             blockers: '',
             notes: '',
+            tasks: [], // Initialize with empty tasks array
             lastUpdated: new Date().toISOString()
         },
         // Add more team members here
@@ -58,6 +62,7 @@ function initializeSampleData() {
 ## Productivity Tips
 
 *   **Regular Updates:** Encourage team members to update their status and progress throughout the day, not just during stand-up. This will give you a more accurate view of the team's progress.
+*   **Task Tracking:** Use the task tracking feature to break down larger projects into manageable pieces and track progress on each item.
 *   **Use the "Notes" Field:** The "Notes" field is a great place to capture additional information that doesn't fit into the other categories, such as links to documents, reminders, or kudos to other team members.
 *   **Leverage AI Summaries:** Paste the generated summaries into an AI to get insights into your team's productivity, identify trends, and get suggestions for improvement.
 *   **Weekly Review:** Use the weekly summary to review the team's progress over the past week and plan for the week ahead.

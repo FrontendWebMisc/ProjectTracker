@@ -503,6 +503,7 @@
                 today: '',
                 blockers: '',
                 notes: '',
+                tasks: [], // Initialize with empty tasks array
                 lastUpdated: new Date().toISOString()
             };
 
@@ -579,11 +580,99 @@
                         <textarea placeholder="Any additional notes or updates..."
                                   onchange="updateMember(${member.id}, 'notes', this.value)">${member.notes}</textarea>
                     </div>
+
+                    <!-- Task Tracking Section -->
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <label style="margin: 0;">📋 Current Tasks</label>
+                            <button class="btn small" onclick="addTask(${member.id})" style="padding: 5px 10px;">➕ Add Task</button>
+                        </div>
+                        <div id="tasks-${member.id}">
+                            ${renderTasks(member.id, member.tasks)}
+                        </div>
+                    </div>
                 `;
                 grid.appendChild(memberCard);
             });
 
             updateStats();
+        }
+
+        function renderTasks(memberId, tasks) {
+            if (!tasks || tasks.length === 0) {
+                return '<div style="color: #666; font-style: italic; padding: 10px;">No tasks added yet</div>';
+            }
+
+            let tasksHtml = '';
+            tasks.forEach((task, index) => {
+                tasksHtml += `
+                    <div class="task-item" style="margin-bottom: 15px; padding: 15px; border: 1px solid #e0e0e0; border-radius: 8px; background: #f9f9f9;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <input type="text" 
+                                   placeholder="Task title" 
+                                   value="${task.title || ''}"
+                                   onchange="updateTask(${memberId}, ${index}, 'title', this.value)"
+                                   style="flex-grow: 1; margin-right: 10px; font-weight: bold;">
+                            <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="removeTask(${memberId}, ${index})">❌</button>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label>Status:</label>
+                            <select onchange="updateTask(${memberId}, ${index}, 'status', this.value)" value="${task.status || 'active'}">
+                                <option value="active" ${task.status === 'active' ? 'selected' : ''}>🟢 Active</option>
+                                <option value="partially-blocked" ${task.status === 'partially-blocked' ? 'selected' : ''}>🟡 Partially Blocked</option>
+                                <option value="blocked" ${task.status === 'blocked' ? 'selected' : ''}>🔴 Blocked</option>
+                                <option value="reviewing" ${task.status === 'reviewing' ? 'selected' : ''}>🔵 In Review</option>
+                                <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>✅ Completed</option>
+                            </select>
+                        </div>
+                        
+                        ${task.status !== 'active' && task.status !== 'completed' ? `
+                        <div class="form-group">
+                            <label>Issue/Blocker Details:</label>
+                            <textarea placeholder="Describe the issue or blocker..."
+                                      onchange="updateTask(${memberId}, ${index}, 'issue', this.value)"
+                                      style="min-height: 60px;">${task.issue || ''}</textarea>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            return tasksHtml;
+        }
+
+        function addTask(memberId) {
+            const member = teamData.find(m => m.id === memberId);
+            if (member) {
+                if (!member.tasks) member.tasks = [];
+                member.tasks.push({
+                    title: '',
+                    status: 'active',
+                    issue: ''
+                });
+                renderTeam();
+            }
+        }
+
+        function removeTask(memberId, taskIndex) {
+            const member = teamData.find(m => m.id === memberId);
+            if (member && member.tasks) {
+                member.tasks.splice(taskIndex, 1);
+                renderTeam();
+            }
+        }
+
+        function updateTask(memberId, taskIndex, field, value) {
+            const member = teamData.find(m => m.id === memberId);
+            if (member && member.tasks && member.tasks[taskIndex]) {
+                member.tasks[taskIndex][field] = value;
+                member.lastUpdated = new Date().toISOString();
+                
+                // Re-render to show/hide issue field based on status
+                if (field === 'status') {
+                    renderTeam();
+                }
+            }
         }
 
         function updateStats() {
@@ -693,6 +782,17 @@
                 
                 if (member.notes.trim()) {
                     summary += `   📝 Notes: ${member.notes.trim()}\n`;
+                }
+                
+                // Add task information
+                if (member.tasks && member.tasks.length > 0) {
+                    summary += `   📋 Tasks:\n`;
+                    member.tasks.forEach((task, taskIndex) => {
+                        summary += `     ${taskIndex + 1}. ${task.title} [${task.status.toUpperCase().replace('-', ' ')}]\n`;
+                        if (task.issue && task.status !== 'active' && task.status !== 'completed') {
+                            summary += `        Issue: ${task.issue}\n`;
+                        }
+                    });
                 }
                 
                 summary += `\n`;
@@ -844,7 +944,8 @@
                         status: member.status,
                         blockers: member.blockers,
                         today: member.today,
-                        yesterday: member.yesterday
+                        yesterday: member.yesterday,
+                        tasks: member.tasks || [] // Include tasks in the analysis
                     } : null;
                 }).filter(Boolean);
 
@@ -863,6 +964,31 @@
                         if (day.blockers.trim()) {
                             summary += `    ${day.date}: ${day.blockers.trim()}\n`;
                         }
+                    });
+                }
+
+                // Task progress analysis
+                const allTasks = [];
+                memberDays.forEach(day => {
+                    day.tasks.forEach(task => {
+                        // Only add unique tasks (by title) to avoid duplicates
+                        if (!allTasks.some(t => t.title === task.title)) {
+                            allTasks.push({
+                                title: task.title,
+                                statusHistory: [{date: day.date, status: task.status}]
+                            });
+                        } else {
+                            const existingTask = allTasks.find(t => t.title === task.title);
+                            existingTask.statusHistory.push({date: day.date, status: task.status});
+                        }
+                    });
+                });
+                
+                if (allTasks.length > 0) {
+                    summary += `  📋 Task Progress:\n`;
+                    allTasks.forEach(task => {
+                        const statusChanges = task.statusHistory.map(h => `${h.date}: ${h.status}`).join(' → ');
+                        summary += `    ${task.title}: ${statusChanges}\n`;
                     });
                 }
 
@@ -1013,6 +1139,13 @@
                     member.blockers = '';
                     member.notes = '';
                     member.status = 'active';
+                    // Clear task details but keep the tasks
+                    if (member.tasks) {
+                        member.tasks.forEach(task => {
+                            task.status = 'active';
+                            task.issue = '';
+                        });
+                    }
                     member.lastUpdated = new Date().toISOString();
                 });
                 renderTeam();
@@ -1044,6 +1177,18 @@
                     today: 'Working on dashboard responsive design',
                     blockers: '',
                     notes: 'Need UX review for mobile layouts',
+                    tasks: [
+                        {
+                            title: 'Dashboard responsive design',
+                            status: 'active',
+                            issue: ''
+                        },
+                        {
+                            title: 'User profile page',
+                            status: 'partially-blocked',
+                            issue: 'Waiting for design assets from UX team'
+                        }
+                    ],
                     lastUpdated: new Date().toISOString()
                 },
                 {
@@ -1055,6 +1200,18 @@
                     today: 'Implementing payment gateway integration',
                     blockers: 'Waiting for payment provider API keys',
                     notes: 'Can work on error handling meanwhile',
+                    tasks: [
+                        {
+                            title: 'Payment gateway integration',
+                            status: 'partially-blocked',
+                            issue: 'Waiting for payment provider API keys'
+                        },
+                        {
+                            title: 'Error handling for API endpoints',
+                            status: 'active',
+                            issue: ''
+                        }
+                    ],
                     lastUpdated: new Date().toISOString()
                 },
                 {
@@ -1066,6 +1223,18 @@
                     today: 'Code review for new API endpoints',
                     blockers: '',
                     notes: 'Found 2 minor UI issues, documented in Jira',
+                    tasks: [
+                        {
+                            title: 'Code review for new API endpoints',
+                            status: 'reviewing',
+                            issue: ''
+                        },
+                        {
+                            title: 'UI testing for dashboard',
+                            status: 'active',
+                            issue: ''
+                        }
+                    ],
                     lastUpdated: new Date().toISOString()
                 }
             ];
