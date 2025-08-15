@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Progress Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .date-display {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        }
+
+        .btn.warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+
+        .btn.info {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+        }
+
+        .btn.purple {
+            background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+        }
+
+        .btn.small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .member-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .member-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .member-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .member-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status-blocked {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-partially-blocked {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .status-reviewing {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .summary-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .summary-content {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .date-picker {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .storage-info {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .storage-info h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .storage-info p {
+            color: #1b5e20;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                flex-direction: column;
+            }
+
+            .team-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .summary-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Team Progress Tracker</h1>
+            <div class="date-display" id="currentDate"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="storage-info">
+                <h4>📁 File Storage Instructions</h4>
+                <p>This app automatically saves daily progress as JSON files. Use the "Save Today's Data" button to download today's data. Load previous days using "Load Data". For best organization, create a "team-data" folder to store all your daily files.</p>
+            </div>
+
+            <div class="control-panel">
+                <button class="btn" onclick="addMember()">➕ Add Member</button>
+                <button class="btn success" onclick="saveTodayData()">💾 Save Today's Data</button>
+                <div class="file-input-wrapper">
+                    <input type="file" id="loadDataFile" class="file-input" accept=".json" onchange="loadData()">
+                    <button class="btn info" onclick="document.getElementById('loadDataFile').click()">📂 Load Data</button>
+                </div>
+                <button class="btn warning" onclick="generateDailySummary()">📊 Daily Summary</button>
+                <button class="btn purple" onclick="showWeeklySummary()">📈 Weekly Summary</button>
+                <button class="btn small" onclick="clearToday()">🗑️ Clear Today</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalMembers">0</div>
+                    <div class="stat-label">Team Members</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeCount">0</div>
+                    <div class="stat-label">Active</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="blockedCount">0</div>
+                    <div class="stat-label">Blocked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="partiallyBlockedCount">0</div>
+                    <div class="stat-label">Partially Blocked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="reviewingCount">0</div>
+                    <div class="stat-label">Reviewing</div>
+                </div>
+            </div>
+
+            <div class="team-grid" id="teamGrid"></div>
+
+            <div class="summary-section">
+                <div class="summary-header">
+                    <h3>📝 AI-Ready Summary</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn small" onclick="copySummary()">📋 Copy</button>
+                        <button class="btn small" onclick="exportSummary()">💾 Export</button>
+                    </div>
+                </div>
+                <div class="summary-content" id="summaryContent">
+                    Click "Daily Summary" to create an AI-ready report of today's progress...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div id="memberModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeMemberModal()">&times;</span>
+            <h2>Add Team Member</h2>
+            <div class="form-group">
+                <label for="memberName">Name:</label>
+                <input type="text" id="memberName" placeholder="Enter member name">
+            </div>
+            <div class="form-group">
+                <label for="memberRole">Role:</label>
+                <input type="text" id="memberRole" placeholder="e.g., Frontend Developer">
+            </div>
+            <button class="btn success" onclick="saveMember()">Save Member</button>
+        </div>
+    </div>
+
+    <!-- Weekly Summary Modal -->
+    <div id="weeklySummaryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeWeeklySummaryModal()">&times;</span>
+            <h2>📈 Weekly Summary Generator</h2>
+            <div class="date-picker">
+                <label>Week Starting:</label>
+                <input type="date" id="weekStartDate">
+                <button class="btn info small" onclick="generateWeeklySummary()">Generate</button>
+            </div>
+            <div id="weeklyFiles" style="margin-bottom: 20px;"></div>
+            <div class="form-group">
+                <label>Load Weekly Data Files (select multiple daily JSON files):</label>
+                <input type="file" id="weeklyDataFiles" multiple accept=".json" onchange="loadWeeklyFiles()">
+            </div>
+            <div class="summary-content" id="weeklySummaryContent" style="max-height: 300px;">
+                Select week start date and load daily data files to generate weekly summary...
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button class="btn small" onclick="copyWeeklySummary()">📋 Copy Weekly Summary</button>
+                <button class="btn small" onclick="exportWeeklySummary()">💾 Export Weekly Summary</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let teamData = [];
+        let memberIdCounter = 1;
+        let currentDate = new Date().toISOString().split('T')[0];
+        let weeklyData = [];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentDate();
+            setDefaultWeekStart();
+            renderTeam();
+        });
+
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
+            currentDate = now.toISOString().split('T')[0];
+        }
+
+        function setDefaultWeekStart() {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+            document.getElementById('weekStartDate').value = monday.toISOString().split('T')[0];
+        }
+
+        function addMember() {
+            document.getElementById('memberModal').style.display = 'block';
+        }
+
+        function closeMemberModal() {
+            document.getElementById('memberModal').style.display = 'none';
+            document.getElementById('memberName').value = '';
+            document.getElementById('memberRole').value = '';
+        }
+
+        function saveMember() {
+            const name = document.getElementById('memberName').value.trim();
+            const role = document.getElementById('memberRole').value.trim();
+
+            if (!name) {
+                alert('Please enter a member name');
+                return;
+            }
+
+            const newMember = {
+                id: memberIdCounter++,
+                name: name,
+                role: role || 'Team Member',
+                status: 'active',
+                yesterday: '',
+                today: '',
+                blockers: '',
+                notes: '',
+                lastUpdated: new Date().toISOString()
+            };
+
+            teamData.push(newMember);
+            renderTeam();
+            closeMemberModal();
+        }
+
+        function updateMember(id, field, value) {
+            const member = teamData.find(m => m.id === id);
+            if (member) {
+                member[field] = value;
+                member.lastUpdated = new Date().toISOString();
+                updateStats();
+            }
+        }
+
+        function removeMember(id) {
+            if (confirm('Are you sure you want to remove this team member?')) {
+                teamData = teamData.filter(m => m.id !== id);
+                renderTeam();
+            }
+        }
+
+        function renderTeam() {
+            const grid = document.getElementById('teamGrid');
+            grid.innerHTML = '';
+
+            teamData.forEach(member => {
+                const memberCard = document.createElement('div');
+                memberCard.className = 'member-card';
+                memberCard.innerHTML = `
+                    <div class="member-header">
+                        <div>
+                            <div class="member-name">${member.name}</div>
+                            <div style="color: #666; font-size: 0.9rem;">${member.role}</div>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="status-badge status-${member.status}">${member.status.replace('-', ' ')}</span>
+                            <button class="btn" style="padding: 5px 10px; font-size: 0.8rem;" onclick="removeMember(${member.id})">❌</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status:</label>
+                        <select onchange="updateMember(${member.id}, 'status', this.value)" value="${member.status}">
+                            <option value="active" ${member.status === 'active' ? 'selected' : ''}>🟢 Active</option>
+                            <option value="blocked" ${member.status === 'blocked' ? 'selected' : ''}>🔴 Blocked</option>
+                            <option value="partially-blocked" ${member.status === 'partially-blocked' ? 'selected' : ''}>🟡 Partially Blocked</option>
+                            <option value="reviewing" ${member.status === 'reviewing' ? 'selected' : ''}>🔵 In Review</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>✅ What I did yesterday:</label>
+                        <textarea placeholder="Completed tasks from yesterday..."
+                                  onchange="updateMember(${member.id}, 'yesterday', this.value)">${member.yesterday}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🎯 What I'm doing today:</label>
+                        <textarea placeholder="Today's planned tasks..."
+                                  onchange="updateMember(${member.id}, 'today', this.value)">${member.today}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🚧 Blockers/Issues:</label>
+                        <textarea placeholder="Any blockers or issues..."
+                                  onchange="updateMember(${member.id}, 'blockers', this.value)">${member.blockers}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📝 Additional Notes:</label>
+                        <textarea placeholder="Any additional notes or updates..."
+                                  onchange="updateMember(${member.id}, 'notes', this.value)">${member.notes}</textarea>
+                    </div>
+                `;
+                grid.appendChild(memberCard);
+            });
+
+            updateStats();
+        }
+
+        function updateStats() {
+            const total = teamData.length;
+            const active = teamData.filter(m => m.status === 'active').length;
+            const blocked = teamData.filter(m => m.status === 'blocked').length;
+            const partiallyBlocked = teamData.filter(m => m.status === 'partially-blocked').length;
+            const reviewing = teamData.filter(m => m.status === 'reviewing').length;
+
+            document.getElementById('totalMembers').textContent = total;
+            document.getElementById('activeCount').textContent = active;
+            document.getElementById('blockedCount').textContent = blocked;
+            document.getElementById('partiallyBlockedCount').textContent = partiallyBlocked;
+            document.getElementById('reviewingCount').textContent = reviewing;
+        }
+
+        function saveTodayData() {
+            const todayData = {
+                date: currentDate,
+                timestamp: new Date().toISOString(),
+                teamData: teamData,
+                summary: {
+                    total: teamData.length,
+                    active: teamData.filter(m => m.status === 'active').length,
+                    blocked: teamData.filter(m => m.status === 'blocked').length,
+                    partiallyBlocked: teamData.filter(m => m.status === 'partially-blocked').length,
+                    reviewing: teamData.filter(m => m.status === 'reviewing').length
+                }
+            };
+
+            const dataStr = JSON.stringify(todayData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `team-progress-${currentDate}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            alert(`Today's data saved as: team-progress-${currentDate}.json\nSave this file in your team-data folder.`);
+        }
+
+        function loadData() {
+            const fileInput = document.getElementById('loadDataFile');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.teamData) {
+                            teamData = data.teamData;
+                            memberIdCounter = Math.max(...teamData.map(m => m.id), 0) + 1;
+                            renderTeam();
+                            alert(`Data loaded from ${data.date || 'unknown date'}`);
+                        } else {
+                            alert('Invalid file format');
+                        }
+                    } catch (error) {
+                        alert('Error reading file: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+            
+            // Reset file input
+            fileInput.value = '';
+        }
+
+        function generateDailySummary() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+
+            let summary = `DAILY STANDUP SUMMARY - ${dateStr}\n`;
+            summary += `=========================================\n\n`;
+            summary += `TEAM OVERVIEW:\n`;
+            summary += `- Total Team Members: ${teamData.length}\n`;
+            summary += `- Active: ${teamData.filter(m => m.status === 'active').length}\n`;
+            summary += `- Blocked: ${teamData.filter(m => m.status === 'blocked').length}\n`;
+            summary += `- Partially Blocked: ${teamData.filter(m => m.status === 'partially-blocked').length}\n`;
+            summary += `- In Review: ${teamData.filter(m => m.status === 'reviewing').length}\n\n`;
+
+            summary += `INDIVIDUAL UPDATES:\n`;
+            summary += `==================\n\n`;
+
+            teamData.forEach((member, index) => {
+                summary += `${index + 1}. ${member.name.toUpperCase()} (${member.role})\n`;
+                summary += `   Status: ${member.status.toUpperCase().replace('-', ' ')}\n`;
+                
+                if (member.yesterday.trim()) {
+                    summary += `   ✅ Yesterday: ${member.yesterday.trim()}\n`;
+                }
+                
+                if (member.today.trim()) {
+                    summary += `   🎯 Today: ${member.today.trim()}\n`;
+                }
+                
+                if (member.blockers.trim()) {
+                    summary += `   🚧 Blockers: ${member.blockers.trim()}\n`;
+                }
+                
+                if (member.notes.trim()) {
+                    summary += `   📝 Notes: ${member.notes.trim()}\n`;
+                }
+                
+                summary += `\n`;
+            });
+
+            // Highlight blockers and important items
+            const problematicMembers = teamData.filter(m => 
+                m.status === 'blocked' || 
+                m.status === 'partially-blocked' || 
+                m.blockers.trim()
+            );
+            if (problematicMembers.length > 0) {
+                summary += `ATTENTION REQUIRED:\n`;
+                summary += `==================\n`;
+                problematicMembers.forEach(member => {
+                    if (member.status === 'blocked') {
+                        summary += `🔴 ${member.name} is BLOCKED\n`;
+                    }
+                    if (member.status === 'partially-blocked') {
+                        summary += `🟡 ${member.name} is PARTIALLY BLOCKED\n`;
+                    }
+                    if (member.blockers.trim()) {
+                        summary += `⚠️  ${member.name}: ${member.blockers.trim()}\n`;
+                    }
+                });
+                summary += `\n`;
+            }
+
+            summary += `AI ANALYSIS PROMPTS:\n`;
+            summary += `====================\n`;
+            summary += `Please analyze this standup data for:\n`;
+            summary += `- Team productivity insights and trends\n`;
+            summary += `- Blocker resolution suggestions and priorities\n`;
+            summary += `- Resource allocation recommendations\n`;
+            summary += `- Risk assessment and mitigation strategies\n`;
+            summary += `- Individual performance patterns and support needs\n`;
+            summary += `- Team collaboration opportunities\n`;
+            summary += `- Overall team health and velocity metrics\n`;
+
+            document.getElementById('summaryContent').textContent = summary;
+        }
+
+        function showWeeklySummary() {
+            document.getElementById('weeklySummaryModal').style.display = 'block';
+        }
+
+        function closeWeeklySummaryModal() {
+            document.getElementById('weeklySummaryModal').style.display = 'none';
+            document.getElementById('weeklySummaryContent').textContent = 'Select week start date and load daily data files to generate weekly summary...';
+            document.getElementById('weeklyDataFiles').value = '';
+            weeklyData = [];
+        }
+
+        function loadWeeklyFiles() {
+            const files = document.getElementById('weeklyDataFiles').files;
+            weeklyData = [];
+            let filesProcessed = 0;
+
+            if (files.length === 0) return;
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.teamData && data.date) {
+                            weeklyData.push(data);
+                        }
+                    } catch (error) {
+                        console.error('Error reading file:', file.name, error);
+                    }
+                    
+                    filesProcessed++;
+                    if (filesProcessed === files.length) {
+                        // Sort by date
+                        weeklyData.sort((a, b) => new Date(a.date) - new Date(b.date));
+                        updateWeeklyFilesDisplay();
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        function updateWeeklyFilesDisplay() {
+            const display = document.getElementById('weeklyFiles');
+            if (weeklyData.length > 0) {
+                display.innerHTML = `<strong>Loaded ${weeklyData.length} daily files:</strong><br>` +
+                    weeklyData.map(d => `📅 ${d.date} (${d.teamData.length} members)`).join('<br>');
+            } else {
+                display.innerHTML = '';
+            }
+        }
+
+        function generateWeeklySummary() {
+            if (weeklyData.length === 0) {
+                alert('Please load daily data files first');
+                return;
+            }
+
+            const weekStart = document.getElementById('weekStartDate').value;
+            const startDate = new Date(weekStart);
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+
+            let summary = `WEEKLY TEAM SUMMARY\n`;
+            summary += `Week: ${weekStart} to ${endDate.toISOString().split('T')[0]}\n`;
+            summary += `===========================================\n\n`;
+
+            // Weekly overview
+            summary += `WEEKLY OVERVIEW:\n`;
+            summary += `- Days tracked: ${weeklyData.length}\n`;
+            summary += `- Date range: ${weeklyData[0].date} to ${weeklyData[weeklyData.length - 1].date}\n\n`;
+
+            // Daily summaries
+            summary += `DAILY BREAKDOWN:\n`;
+            summary += `================\n\n`;
+            weeklyData.forEach(dayData => {
+                const dayName = new Date(dayData.date).toLocaleDateString('en-US', { weekday: 'long' });
+                summary += `${dayName} (${dayData.date}):\n`;
+                summary += `  Total: ${dayData.summary.total} | Active: ${dayData.summary.active} | `;
+                summary += `Blocked: ${dayData.summary.blocked} | Partially Blocked: ${dayData.summary.partiallyBlocked} | Review: ${dayData.summary.reviewing}\n`;
+                
+                // Highlight blockers for the day
+                const blockedMembers = dayData.teamData.filter(m => 
+                    m.status === 'blocked' || m.status === 'partially-blocked' || m.blockers.trim()
+                );
+                if (blockedMembers.length > 0) {
+                    summary += `  ⚠️ Issues: ${blockedMembers.map(m => `${m.name}(${m.status})`).join(', ')}\n`;
+                }
+                summary += `\n`;
+            });
+
+            // Team member weekly analysis
+            summary += `INDIVIDUAL WEEKLY ANALYSIS:\n`;
+            summary += `==========================\n\n`;
+            
+            const allMembers = new Set();
+            weeklyData.forEach(day => {
+                day.teamData.forEach(member => allMembers.add(member.name));
+            });
+
+            Array.from(allMembers).forEach(memberName => {
+                summary += `${memberName.toUpperCase()}:\n`;
+                
+                const memberDays = weeklyData.map(day => {
+                    const member = day.teamData.find(m => m.name === memberName);
+                    return member ? {
+                        date: day.date,
+                        status: member.status,
+                        blockers: member.blockers,
+                        today: member.today,
+                        yesterday: member.yesterday
+                    } : null;
+                }).filter(Boolean);
+
+                // Status distribution
+                const statusCount = {};
+                memberDays.forEach(day => {
+                    statusCount[day.status] = (statusCount[day.status] || 0) + 1;
+                });
+                summary += `  Status Distribution: ${Object.entries(statusCount).map(([status, count]) => `${status}(${count}d)`).join(', ')}\n`;
+
+                // Days with blockers
+                const blockedDays = memberDays.filter(day => day.status.includes('blocked') || day.blockers.trim());
+                if (blockedDays.length > 0) {
+                    summary += `  🚧 Blocked Days: ${blockedDays.length}/${memberDays.length}\n`;
+                    blockedDays.forEach(day => {
+                        if (day.blockers.trim()) {
+                            summary += `    ${day.date}: ${day.blockers.trim()}\n`;
+                        }
+                    });
+                }
+
+                // Recent accomplishments and tasks
+                const recentWork = memberDays.slice(-2);
+                if (recentWork.length > 0) {
+                    summary += `  📈 Recent Progress:\n`;
+                    recentWork.forEach(day => {
+                        if (day.today.trim()) {
+                            summary += `    ${day.date}: ${day.today.trim()}\n`;
+                        }
+                    });
+                }
+                summary += `\n`;
+            });
+
+            // Weekly insights and trends
+            summary += `WEEKLY INSIGHTS & TRENDS:\n`;
+            summary += `========================\n\n`;
+
+            // Calculate trends
+            const dailyBlockedCounts = weeklyData.map(day => 
+                day.summary.blocked + day.summary.partiallyBlocked
+            );
+            const avgBlocked = (dailyBlockedCounts.reduce((a, b) => a + b, 0) / dailyBlockedCounts.length).toFixed(1);
+            
+            const dailyActiveCounts = weeklyData.map(day => day.summary.active);
+            const avgActive = (dailyActiveCounts.reduce((a, b) => a + b, 0) / dailyActiveCounts.length).toFixed(1);
+
+            summary += `📊 METRICS:\n`;
+            summary += `- Average daily active members: ${avgActive}\n`;
+            summary += `- Average daily blocked members: ${avgBlocked}\n`;
+            summary += `- Peak performance day: ${weeklyData[dailyActiveCounts.indexOf(Math.max(...dailyActiveCounts))].date}\n`;
+            summary += `- Most challenging day: ${weeklyData[dailyBlockedCounts.indexOf(Math.max(...dailyBlockedCounts))].date}\n\n`;
+
+            // Common blockers analysis
+            const allBlockers = [];
+            weeklyData.forEach(day => {
+                day.teamData.forEach(member => {
+                    if (member.blockers.trim()) {
+                        allBlockers.push(member.blockers.trim().toLowerCase());
+                    }
+                });
+            });
+
+            if (allBlockers.length > 0) {
+                summary += `🔍 COMMON BLOCKER PATTERNS:\n`;
+                const blockerFreq = {};
+                allBlockers.forEach(blocker => {
+                    const words = blocker.split(' ').filter(word => word.length > 3);
+                    words.forEach(word => {
+                        blockerFreq[word] = (blockerFreq[word] || 0) + 1;
+                    });
+                });
+                const topBlockers = Object.entries(blockerFreq)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 5)
+                    .map(([word, count]) => `${word}(${count}x)`)
+                    .join(', ');
+                summary += `- Frequent blocker keywords: ${topBlockers}\n\n`;
+            }
+
+            summary += `AI WEEKLY ANALYSIS PROMPTS:\n`;
+            summary += `===========================\n`;
+            summary += `Based on this weekly data, please provide:\n`;
+            summary += `1. Team velocity and productivity analysis\n`;
+            summary += `2. Blocker pattern analysis and prevention strategies\n`;
+            summary += `3. Individual performance insights and development recommendations\n`;
+            summary += `4. Resource allocation and workload distribution suggestions\n`;
+            summary += `5. Team collaboration and communication improvements\n`;
+            summary += `6. Sprint planning recommendations for next week\n`;
+            summary += `7. Risk assessment for upcoming deliverables\n`;
+            summary += `8. Process improvement suggestions based on recurring issues\n`;
+            summary += `9. Team morale and engagement indicators\n`;
+            summary += `10. Long-term trend analysis and strategic recommendations\n`;
+
+            document.getElementById('weeklySummaryContent').textContent = summary;
+        }
+
+        function copySummary() {
+            const summaryContent = document.getElementById('summaryContent').textContent;
+            if (summaryContent === "Click \"Daily Summary\" to create an AI-ready report of today's progress...") {
+                alert('Please generate a daily summary first!');
+                return;
+            }
+
+            navigator.clipboard.writeText(summaryContent).then(() => {
+                alert('Daily summary copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy. Please select and copy manually.');
+            });
+        }
+
+        function copyWeeklySummary() {
+            const summaryContent = document.getElementById('weeklySummaryContent').textContent;
+            if (summaryContent === "Select week start date and load daily data files to generate weekly summary...") {
+                alert('Please generate a weekly summary first!');
+                return;
+            }
+
+            navigator.clipboard.writeText(summaryContent).then(() => {
+                alert('Weekly summary copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy. Please select and copy manually.');
+            });
+        }
+
+        function exportSummary() {
+            const summaryContent = document.getElementById('summaryContent').textContent;
+            if (summaryContent === "Click \"Daily Summary\" to create an AI-ready report of today's progress...") {
+                alert('Please generate a daily summary first!');
+                return;
+            }
+
+            const dataBlob = new Blob([summaryContent], {type: 'text/plain'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `daily-summary-${currentDate}.txt`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportWeeklySummary() {
+            const summaryContent = document.getElementById('weeklySummaryContent').textContent;
+            if (summaryContent === "Select week start date and load daily data files to generate weekly summary...") {
+                alert('Please generate a weekly summary first!');
+                return;
+            }
+
+            const weekStart = document.getElementById('weekStartDate').value;
+            const dataBlob = new Blob([summaryContent], {type: 'text/plain'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `weekly-summary-${weekStart}.txt`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearToday() {
+            if (confirm('Are you sure you want to clear today\'s data? This will remove all progress notes but keep team members.')) {
+                teamData.forEach(member => {
+                    member.yesterday = '';
+                    member.today = '';
+                    member.blockers = '';
+                    member.notes = '';
+                    member.status = 'active';
+                    member.lastUpdated = new Date().toISOString();
+                });
+                renderTeam();
+                document.getElementById('summaryContent').textContent = "Click \"Daily Summary\" to create an AI-ready report of today's progress...";
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const memberModal = document.getElementById('memberModal');
+            const weeklyModal = document.getElementById('weeklySummaryModal');
+            if (event.target === memberModal) {
+                closeMemberModal();
+            }
+            if (event.target === weeklyModal) {
+                closeWeeklySummaryModal();
+            }
+        }
+
+        // Initialize with sample data for demonstration
+        function initializeSampleData() {
+            teamData = [
+                {
+                    id: 1,
+                    name: 'Alice Johnson',
+                    role: 'Frontend Developer',
+                    status: 'active',
+                    yesterday: 'Completed user authentication UI components',
+                    today: 'Working on dashboard responsive design',
+                    blockers: '',
+                    notes: 'Need UX review for mobile layouts',
+                    lastUpdated: new Date().toISOString()
+                },
+                {
+                    id: 2,
+                    name: 'Bob Smith',
+                    role: 'Backend Developer',
+                    status: 'partially-blocked',
+                    yesterday: 'Set up API endpoints for user management',
+                    today: 'Implementing payment gateway integration',
+                    blockers: 'Waiting for payment provider API keys',
+                    notes: 'Can work on error handling meanwhile',
+                    lastUpdated: new Date().toISOString()
+                },
+                {
+                    id: 3,
+                    name: 'Carol Davis',
+                    role: 'QA Engineer',
+                    status: 'reviewing',
+                    yesterday: 'Executed regression tests for login module',
+                    today: 'Code review for new API endpoints',
+                    blockers: '',
+                    notes: 'Found 2 minor UI issues, documented in Jira',
+                    lastUpdated: new Date().toISOString()
+                }
+            ];
+            memberIdCounter = 4;
+            renderTeam();
+        }
+
+        // Load sample data on first visit
+        if (teamData.length === 0) {
+            initializeSampleData();
+        }
+    </script>
+</body>
+</html>
