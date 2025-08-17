@@ -30,6 +30,7 @@ function initializeSampleData() {
                     status: 'active',
                     issue: '',
                     notes: 'Working on mobile-first approach',
+                    nextSteps: 'Complete tablet breakpoint implementation and test on actual devices',
                     understanding: {
                         summary: 'Creating a responsive dashboard layout that works seamlessly across all device sizes',
                         primaryLanguage: 'React',
@@ -76,6 +77,7 @@ function initializeSampleData() {
                     status: 'partially-blocked',
                     issue: 'Waiting for design assets from UX team',
                     notes: 'Can start with basic layout structure',
+                    nextSteps: 'Follow up with UX team on design assets timeline, start basic layout wireframe',
                     understanding: {
                         summary: 'Building a comprehensive user profile page with editable fields and settings',
                         primaryLanguage: 'React',
@@ -123,6 +125,102 @@ function initializeSampleData() {
                             reason: 'Frontend expertise and form handling experience'
                         }]
                     }
+                },
+                {
+                    title: 'Real-time Notification System',
+                    status: 'active',
+                    issue: '',
+                    notes: 'Implementing WebSocket connection for live notifications',
+                    nextSteps: 'Complete WebSocket reconnection logic and implement notification sound system',
+                    understanding: {
+                        summary: 'Building a real-time notification system using WebSocket for instant user alerts',
+                        primaryLanguage: 'React',
+                        secondaryLanguage: 'WebSocket',
+                        taskDescription: 'Develop a comprehensive real-time notification system that delivers instant alerts to users through WebSocket connections. The system should handle various notification types, provide visual feedback, and maintain notification history.',
+                        requirements: [
+                            'Implement WebSocket connection management for real-time communication',
+                            'Create notification components (toast, banner, modal variants)',
+                            'Build notification center with history and filtering capabilities',
+                            'Add notification preferences and user settings',
+                            'Implement notification sound and visual indicators',
+                            'Handle connection failures and reconnection logic',
+                            'Add notification batching for performance optimization',
+                            'Create admin interface for sending system-wide notifications'
+                        ],
+                        details: [
+                            '• Setting up WebSocket client connection',
+                            '• Creating reusable notification components',
+                            '• Implementing notification state management',
+                            '• Adding sound and visual notification indicators'
+                        ],
+                        technicalContext: 'React frontend with WebSocket integration and state management',
+                        businessImpact: 'Improves user engagement and provides instant communication',
+                        estimatedEffort: '4-5 days',
+                        dependencies: ['WebSocket server setup', 'Notification service API'],
+                        skillsRequired: ['React', 'WebSocket', 'State Management', 'Real-time Systems'],
+                        priority: 'high',
+                        complexity: 'high',
+                        riskLevel: 'medium',
+                        blockerHistory: [],
+                        progressMetrics: {
+                            estimatedHours: 32,
+                            hoursSpent: 12,
+                            completionPercentage: 40
+                        },
+                        assignmentHistory: [{
+                            assignedTo: 'Amarnath',
+                            assignedDate: '2024-01-18',
+                            reason: 'Frontend expertise in React and real-time systems'
+                        }]
+                    }
+                },
+                {
+                    title: 'Data Visualization Dashboard',
+                    status: 'reviewing',
+                    issue: '',
+                    notes: 'Charts implementation completed, reviewing performance optimization',
+                    nextSteps: 'Performance testing with large datasets and prepare for code review',
+                    understanding: {
+                        summary: 'Creating interactive data visualization dashboard with charts and analytics',
+                        primaryLanguage: 'React',
+                        secondaryLanguage: 'D3.js',
+                        taskDescription: 'Build an interactive data visualization dashboard that displays business metrics through various chart types, filters, and real-time data updates. The dashboard should be performant and provide actionable insights.',
+                        requirements: [
+                            'Implement multiple chart types (line, bar, pie, scatter, heatmap)',
+                            'Add interactive filtering and date range selection',
+                            'Create responsive chart layouts for different screen sizes',
+                            'Implement real-time data updates and live chart refreshing',
+                            'Add export functionality (PDF, CSV, PNG formats)',
+                            'Build custom chart components with D3.js integration',
+                            'Optimize performance for large datasets',
+                            'Add drill-down capabilities for detailed analytics'
+                        ],
+                        details: [
+                            '• Integrating Chart.js and D3.js libraries',
+                            '• Creating responsive chart containers',
+                            '• Implementing data filtering and aggregation',
+                            '• Adding export and sharing capabilities'
+                        ],
+                        technicalContext: 'React with Chart.js, D3.js, and data processing libraries',
+                        businessImpact: 'Enables data-driven decision making and business insights',
+                        estimatedEffort: '6-7 days',
+                        dependencies: ['Analytics API', 'Chart library selection'],
+                        skillsRequired: ['React', 'D3.js', 'Data Visualization', 'Performance Optimization'],
+                        priority: 'medium',
+                        complexity: 'high',
+                        riskLevel: 'low',
+                        blockerHistory: [],
+                        progressMetrics: {
+                            estimatedHours: 48,
+                            hoursSpent: 42,
+                            completionPercentage: 85
+                        },
+                        assignmentHistory: [{
+                            assignedTo: 'Amarnath',
+                            assignedDate: '2024-01-08',
+                            reason: 'Experience with data visualization and React'
+                        }]
+                    }
                 }
             ],
             lastUpdated: new Date().toISOString()
@@ -137,10 +235,21 @@ function initializeSampleData() {
                 {
                     category: 'Backend Technologies',
                     skills: [
-                        { name: 'Node.js', proficiency: 'Expert', experience: '4+ years' },
-                        { name: 'Express.js', proficiency: 'Expert', experience: '4+ years' },
-                        { name: 'Python', proficiency: 'Advanced', experience: '3+ years' },
-                        { name: 'Java', proficiency: 'Intermediate', experience: '2+ years' }
+                        { name: 'Java', proficiency: 'Expert', experience: '5+ years' },
+                        { name: 'Spring Boot', proficiency: 'Expert', experience: '4+ years' },
+                        { name: 'Node.js', proficiency: 'Advanced', experience: '4+ years' },
+                        { name: 'Express.js', proficiency: 'Advanced', experience: '4+ years' },
+                        { name: 'Python', proficiency: 'Advanced', experience: '3+ years' }
+                    ]
+                },
+                {
+                    category: 'Java Ecosystem',
+                    skills: [
+                        { name: 'Spring Security', proficiency: 'Expert', experience: '3+ years' },
+                        { name: 'Spring Data JPA', proficiency: 'Expert', experience: '4+ years' },
+                        { name: 'Hibernate', proficiency: 'Advanced', experience: '3+ years' },
+                        { name: 'Maven', proficiency: 'Advanced', experience: '4+ years' },
+                        { name: 'JUnit', proficiency: 'Advanced', experience: '4+ years' }
                     ]
                 },
                 {
@@ -175,6 +284,7 @@ function initializeSampleData() {
                     status: 'partially-blocked',
                     issue: 'Waiting for payment provider API keys',
                     notes: 'Documentation review completed, ready to implement once keys arrive',
+                    nextSteps: 'Escalate API key request to product manager, prepare test environment setup',
                     understanding: {
                         summary: 'Integrating third-party payment gateway to handle secure transactions',
                         primaryLanguage: 'Node.js',
@@ -229,6 +339,7 @@ function initializeSampleData() {
                     status: 'active',
                     issue: '',
                     notes: 'Implementing standardized error response format',
+                    nextSteps: 'Complete middleware implementation and add comprehensive unit tests',
                     understanding: {
                         summary: 'Creating comprehensive error handling system for all API endpoints',
                         primaryLanguage: 'Node.js',
@@ -270,6 +381,116 @@ function initializeSampleData() {
                             reason: 'Backend lead responsible for API infrastructure'
                         }]
                     }
+                },
+                {
+                    title: 'Employee Management REST API',
+                    status: 'active',
+                    issue: '',
+                    notes: 'CRUD operations implemented, working on advanced search functionality',
+                    nextSteps: 'Implement pagination for employee list endpoint and add Swagger documentation',
+                    understanding: {
+                        summary: 'Develop a comprehensive RESTful API for employee management with full CRUD operations',
+                        primaryLanguage: 'Java',
+                        secondaryLanguage: 'Spring Boot',
+                        taskDescription: 'Create a robust RESTful web service in Java using Spring Boot that manages employee records with comprehensive CRUD operations, search capabilities, and proper data validation.',
+                        requirements: [
+                            'Use Spring Boot framework with proper project structure',
+                            'Implement GET /employees - Retrieve all employees with pagination',
+                            'Implement GET /employees/{id} - Retrieve employee by ID',
+                            'Implement POST /employees - Create new employee with validation',
+                            'Implement PUT /employees/{id} - Update existing employee details',
+                            'Implement DELETE /employees/{id} - Delete employee record',
+                            'Employee entity fields: id (Long), name (String), email (String), department (String), dateOfJoining (Date)',
+                            'Use H2 in-memory database for persistence with JPA',
+                            'Include comprehensive input validation and error handling',
+                            'Write unit tests for service and controller layers',
+                            'Provide API documentation using Swagger/OpenAPI',
+                            'Add search and filtering capabilities by department and date range'
+                        ],
+                        details: [
+                            '• Setting up Spring Boot project with required dependencies',
+                            '• Creating Employee entity with JPA annotations',
+                            '• Implementing repository layer with Spring Data JPA',
+                            '• Building REST controllers with proper HTTP mappings'
+                        ],
+                        technicalContext: 'Java Spring Boot with H2 database, JPA, and Swagger documentation',
+                        businessImpact: 'Enables efficient employee data management and HR operations',
+                        estimatedEffort: '5-6 days',
+                        dependencies: ['Database schema approval', 'API specification review'],
+                        skillsRequired: ['Java', 'Spring Boot', 'JPA', 'REST APIs', 'Unit Testing'],
+                        priority: 'high',
+                        complexity: 'medium',
+                        riskLevel: 'low',
+                        blockerHistory: [],
+                        progressMetrics: {
+                            estimatedHours: 40,
+                            hoursSpent: 28,
+                            completionPercentage: 70
+                        },
+                        assignmentHistory: [{
+                            assignedTo: 'Bob Smith',
+                            assignedDate: '2024-01-09',
+                            reason: 'Java backend expertise and Spring Boot experience'
+                        }]
+                    }
+                },
+                {
+                    title: 'Microservices Authentication Service',
+                    status: 'partially-blocked',
+                    issue: 'Waiting for security team approval on JWT implementation',
+                    notes: 'Basic authentication flow completed, implementing JWT token management',
+                    nextSteps: 'Schedule security review meeting, prepare JWT implementation documentation',
+                    understanding: {
+                        summary: 'Building a centralized authentication microservice using Spring Security and JWT',
+                        primaryLanguage: 'Java',
+                        secondaryLanguage: 'Spring Security',
+                        taskDescription: 'Develop a secure authentication microservice that handles user login, registration, JWT token generation and validation, and role-based access control across the application ecosystem.',
+                        requirements: [
+                            'Implement user registration with email verification',
+                            'Create secure login endpoint with password encryption',
+                            'Generate and validate JWT tokens with proper expiration',
+                            'Implement refresh token mechanism for session management',
+                            'Add role-based access control (RBAC) with permissions',
+                            'Create password reset functionality with secure tokens',
+                            'Implement account lockout after failed login attempts',
+                            'Add OAuth2 integration for social login (Google, GitHub)',
+                            'Create admin endpoints for user management',
+                            'Implement comprehensive security logging and monitoring',
+                            'Add rate limiting to prevent brute force attacks',
+                            'Use Spring Security with custom authentication providers'
+                        ],
+                        details: [
+                            '• Configuring Spring Security with JWT authentication',
+                            '• Creating user entity with roles and permissions',
+                            '• Implementing token generation and validation services',
+                            '• Setting up OAuth2 providers for social authentication'
+                        ],
+                        technicalContext: 'Java Spring Boot with Spring Security, JWT, OAuth2, and PostgreSQL',
+                        businessImpact: 'Provides secure centralized authentication for all application services',
+                        estimatedEffort: '7-8 days',
+                        dependencies: ['Security team approval', 'OAuth2 provider setup'],
+                        skillsRequired: ['Java', 'Spring Security', 'JWT', 'OAuth2', 'Security Protocols'],
+                        priority: 'critical',
+                        complexity: 'high',
+                        riskLevel: 'high',
+                        blockerHistory: [{
+                            date: '2024-01-19',
+                            blocker: 'Waiting for security team approval on JWT implementation',
+                            impact: 'Cannot proceed with token validation implementation',
+                            resolution: 'pending',
+                            escalatedTo: 'Security Team Lead'
+                        }],
+                        progressMetrics: {
+                            estimatedHours: 56,
+                            hoursSpent: 32,
+                            completionPercentage: 55
+                        },
+                        assignmentHistory: [{
+                            assignedTo: 'Bob Smith',
+                            assignedDate: '2024-01-11',
+                            reason: 'Security expertise and microservices architecture experience'
+                        }]
+                    }
                 }
             ],
             lastUpdated: new Date().toISOString()
@@ -285,9 +506,20 @@ function initializeSampleData() {
                     category: 'Testing Frameworks',
                     skills: [
                         { name: 'Selenium', proficiency: 'Expert', experience: '5+ years' },
+                        { name: 'JUnit', proficiency: 'Expert', experience: '4+ years' },
+                        { name: 'TestNG', proficiency: 'Advanced', experience: '3+ years' },
                         { name: 'Jest', proficiency: 'Advanced', experience: '3+ years' },
                         { name: 'Cypress', proficiency: 'Expert', experience: '3+ years' },
-                        { name: 'TestNG', proficiency: 'Advanced', experience: '2+ years' }
+                        { name: 'MockMvc', proficiency: 'Advanced', experience: '2+ years' }
+                    ]
+                },
+                {
+                    category: 'Backend Testing',
+                    skills: [
+                        { name: 'Spring Boot Test', proficiency: 'Advanced', experience: '3+ years' },
+                        { name: 'TestContainers', proficiency: 'Advanced', experience: '2+ years' },
+                        { name: 'API Testing', proficiency: 'Expert', experience: '4+ years' },
+                        { name: 'Integration Testing', proficiency: 'Expert', experience: '4+ years' }
                     ]
                 },
                 {
@@ -324,6 +556,7 @@ function initializeSampleData() {
                     status: 'reviewing',
                     issue: '',
                     notes: 'Reviewing Bob\'s payment integration code',
+                    nextSteps: 'Complete security analysis and provide feedback on error handling patterns',
                     understanding: {
                         summary: 'Conducting thorough code review for payment gateway API endpoints',
                         primaryLanguage: 'Node.js',
@@ -371,6 +604,7 @@ function initializeSampleData() {
                     status: 'active',
                     issue: '',
                     notes: 'Testing responsive design across different devices',
+                    nextSteps: 'Finish mobile device testing and create accessibility compliance report',
                     understanding: {
                         summary: 'Comprehensive UI testing of dashboard across multiple devices and browsers',
                         primaryLanguage: 'Testing Frameworks',
@@ -410,6 +644,56 @@ function initializeSampleData() {
                             assignedTo: 'Carol Davis',
                             assignedDate: '2024-01-13',
                             reason: 'Expert in UI testing and accessibility compliance'
+                        }]
+                    }
+                },
+                {
+                    title: 'API Integration Testing Suite',
+                    status: 'active',
+                    issue: '',
+                    notes: 'Setting up test environment for Spring Boot API testing',
+                    nextSteps: 'Configure TestContainers setup and implement first set of endpoint tests',
+                    understanding: {
+                        summary: 'Creating comprehensive integration test suite for Spring Boot REST APIs',
+                        primaryLanguage: 'Java',
+                        secondaryLanguage: 'JUnit',
+                        taskDescription: 'Develop a complete integration testing framework for Spring Boot REST APIs using JUnit, MockMvc, and TestContainers. The suite should cover all API endpoints, error scenarios, and data validation.',
+                        requirements: [
+                            'Set up Spring Boot Test configuration with test profiles',
+                            'Create integration tests for all REST endpoints using MockMvc',
+                            'Implement database testing with TestContainers',
+                            'Add authentication and authorization testing scenarios',
+                            'Create test data fixtures and factories for consistent testing',
+                            'Implement API contract testing with schema validation',
+                            'Add performance testing for API response times',
+                            'Create test reports with coverage metrics',
+                            'Set up continuous integration pipeline for automated testing',
+                            'Add negative testing for error handling validation'
+                        ],
+                        details: [
+                            '• Configuring Spring Boot Test with MockMvc',
+                            '• Setting up TestContainers for database integration tests',
+                            '• Creating test data builders and fixtures',
+                            '• Implementing API contract validation tests'
+                        ],
+                        technicalContext: 'Spring Boot Test framework with JUnit 5, MockMvc, and TestContainers',
+                        businessImpact: 'Ensures API reliability and prevents regression bugs in production',
+                        estimatedEffort: '4-5 days',
+                        dependencies: ['Spring Boot API completion', 'Test environment setup'],
+                        skillsRequired: ['Java', 'JUnit', 'Spring Boot Test', 'API Testing', 'TestContainers'],
+                        priority: 'high',
+                        complexity: 'medium',
+                        riskLevel: 'low',
+                        blockerHistory: [],
+                        progressMetrics: {
+                            estimatedHours: 32,
+                            hoursSpent: 8,
+                            completionPercentage: 25
+                        },
+                        assignmentHistory: [{
+                            assignedTo: 'Carol Davis',
+                            assignedDate: '2024-01-16',
+                            reason: 'API testing expertise and Spring Boot testing experience'
                         }]
                     }
                 }

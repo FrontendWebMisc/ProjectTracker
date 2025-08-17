@@ -573,6 +573,7 @@
             <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                 <button class="btn info small" onclick="generateTaskStateAnalysis()">🔍 Analyze Tasks</button>
                 <button class="btn small" onclick="generateCurrentTaskSummary()">📊 Current State Summary</button>
+                <button class="btn small" style="background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);" onclick="generateTechnicalTaskAnalysis()">🔧 Technical Task Analysis</button>
             </div>
             <div class="summary-content" id="taskStateContent" style="max-height: 400px;">
                 Load historical data files and click "Analyze Tasks" to generate comprehensive task state analysis for GenAI...
@@ -818,6 +819,13 @@
                                       onchange="updateTask(${memberId}, ${index}, 'notes', this.value)"
                                       style="min-height: 60px;">${task.notes || ''}</textarea>
                         </div>
+                        
+                        <div class="form-group">
+                            <label>🎯 Next Steps:</label>
+                            <textarea placeholder="What needs to be done next for this task..."
+                                      onchange="updateTask(${memberId}, ${index}, 'nextSteps', this.value)"
+                                      style="min-height: 60px;">${task.nextSteps || ''}</textarea>
+                        </div>
                     </div>
                 `;
             });
@@ -832,7 +840,8 @@
                     title: '',
                     status: 'active',
                     issue: '',
-                    notes: ''
+                    notes: '',
+                    nextSteps: ''
                 });
                 renderTeam();
             }
@@ -1747,6 +1756,16 @@
             document.getElementById('taskStateContent').textContent = summary;
         }
 
+        function generateTechnicalTaskAnalysis() {
+            if (taskStateData.length === 0) {
+                alert('Please load historical data files first');
+                return;
+            }
+
+            const analysis = generateTechnicalAnalysis();
+            document.getElementById('taskStateContent').textContent = analysis;
+        }
+
         function analyzeTaskStates() {
             const now = new Date();
             const dateRange = taskStateData.length > 1 ? 
@@ -1933,6 +1952,7 @@
                                 status: task.status || 'unknown',
                                 notes: task.notes || '',
                                 issue: task.issue || '',
+                                nextSteps: task.nextSteps || '',
                                 understanding: task.understanding || null
                             });
                         });
@@ -2067,28 +2087,11 @@
                 summary += `${member.name.toUpperCase()} (${member.role}):\n`;
                 summary += `Status: ${member.status.toUpperCase()}\n`;
                 
-                // Add member skill context for AI understanding
-                if (member.skillsets && member.skillsets.length > 0) {
-                    const topSkills = member.skillsets.slice(0, 2).map(category => 
-                        category.skills.filter(skill => skill.proficiency === 'Expert' || skill.proficiency === 'Advanced')
-                                     .slice(0, 3)
-                                     .map(skill => skill.name)
-                    ).flat();
-                    if (topSkills.length > 0) {
-                        summary += `🎖️ Key Skills: ${topSkills.join(', ')}\n`;
-                    }
-                }
-                
-                if (member.today && member.today.trim()) {
-                    summary += `🎯 Today's Focus: ${member.today.trim()}\n`;
-                }
-                
                 if (member.blockers && member.blockers.trim()) {
                     summary += `🚧 Current Blockers: ${member.blockers.trim()}\n`;
                 }
                 
                 if (member.tasks && member.tasks.length > 0) {
-                    summary += `📋 Current Tasks (${member.tasks.length}):\n`;
                     member.tasks.forEach((task, index) => {
                         summary += `\n${index + 1}. TASK DETAILS:\n`;
                         summary += `${'='.repeat(20)}\n`;
@@ -2135,23 +2138,9 @@
                         }
                         summary += `Latest user comment:\n${latestComment}\n\n`;
                         
-                        // Current Status and Issues
-                        summary += `Current Status: ${task.status.toUpperCase()}\n`;
-                        if (task.issue && task.issue.trim()) {
-                            summary += `⚠️ Current Issue: ${task.issue.trim()}\n`;
-                        }
-                        
-                        // Additional context for AI
-                        if (task.priority) {
-                            summary += `🔥 Priority: ${task.priority.toUpperCase()}\n`;
-                        }
-                        if (task.progressMetrics) {
-                            const progress = task.progressMetrics;
-                            summary += `📈 Progress: ${progress.completionPercentage}% (${progress.hoursSpent}/${progress.estimatedHours}h)\n`;
-                        }
-                        if (task.understanding?.dependencies && task.understanding.dependencies.length > 0) {
-                            summary += `🔗 Dependencies: ${task.understanding.dependencies.join(', ')}\n`;
-                        }
+                        // Next Steps
+                        const nextSteps = task.nextSteps && task.nextSteps.trim() ? task.nextSteps.trim() : 'No next steps defined';
+                        summary += `Next Steps:\n${nextSteps}\n\n`;
                         
                         summary += `\n${'-'.repeat(50)}\n`;
                     });
@@ -2186,41 +2175,176 @@
                 summary += `\n`;
             }
             
-            summary += `🤖 GENAI CURRENT STATE ANALYSIS PROMPTS:\n`;
-            summary += `========================================\n`;
-            summary += `Based on this comprehensive task state snapshot, please provide detailed analysis on:\n\n`;
-            
-            summary += `IMMEDIATE ACTIONS (Today/Tomorrow):\n`;
-            summary += `1. Which specific tasks need immediate intervention and why?\n`;
-            summary += `2. What blockers can be resolved today and how?\n`;
-            summary += `3. Which team members need urgent support or unblocking?\n`;
-            summary += `4. What's the optimal task prioritization for each person today?\n\n`;
-            
-            summary += `TASK-SKILL MATCHING:\n`;
-            summary += `5. Are current task assignments optimal based on team member skills?\n`;
-            summary += `6. Which tasks might benefit from reassignment or collaboration?\n`;
-            summary += `7. Where do you see skill gaps that need addressing?\n`;
-            summary += `8. What tasks should be deprioritized to focus on critical items?\n\n`;
-            
-            summary += `RISK & DEPENDENCY MANAGEMENT:\n`;
-            summary += `9. Which tasks have the highest risk of missing deadlines?\n`;
-            summary += `10. What dependency chains are most vulnerable?\n`;
-            summary += `11. Which blockers need escalation vs. team resolution?\n`;
-            summary += `12. What preventive measures should be taken for high-risk tasks?\n\n`;
-            
-            summary += `PROGRESS & EFFICIENCY:\n`;
-            summary += `13. Which tasks are progressing faster/slower than expected?\n`;
-            summary += `14. Where are we seeing scope creep or complexity increases?\n`;
-            summary += `15. What patterns suggest process improvements needed?\n`;
-            summary += `16. How should resource allocation be adjusted for optimal velocity?\n\n`;
-            
-            summary += `TEAM OPTIMIZATION:\n`;
-            summary += `17. Which team members might be over/under-utilized?\n`;
-            summary += `18. What collaboration opportunities could accelerate progress?\n`;
-            summary += `19. Where do you see signs of technical debt or quality concerns?\n`;
-            summary += `20. What recommendations do you have for sprint planning and task breakdown?\n`;
+            summary += `🤖 GENAI EMAIL DRAFT GENERATION PROMPTS:\n`;
+            summary += `==========================================\n`;
+            summary += `Based on this comprehensive task state snapshot, please generate a professional email draft that provides a clear, understandable current status report for every task.\n\n`;
+            summary += `EMAIL REQUIREMENTS:\n`;
+            summary += `- Create a well-structured email with proper subject line and professional tone\n`;
+            summary += `- Provide a simple, understandable summary for each task's current state\n`;
+            summary += `- Highlight necessary points, blockers, and critical issues that need attention\n`;
+            summary += `- Include clear next steps and actionable items for each task\n`;
+            summary += `- Mention Task Notes/Current Status details when they contain important highlights\n`;
+            summary += `- Organize information in a scannable format suitable for stakeholders\n`;
+            summary += `- Include priority levels and any urgent items requiring immediate action\n\n`;
+            summary += `Please generate a complete email draft ready to send to project stakeholders.\n`;
             
             return summary;
+        }
+
+        function generateTechnicalAnalysis() {
+            if (taskStateData.length === 0) return '';
+            
+            // Get the most recent data (files are already sorted by date)
+            const latestData = taskStateData[taskStateData.length - 1];
+            const now = new Date();
+            
+            // Build task timeline to get latest information
+            const taskTimelines = buildTaskTimelines();
+            
+            let analysis = `TECHNICAL TASK STATUS ANALYSIS - ${latestData.date}\n`;
+            analysis += `=====================================================\n\n`;
+            
+            analysis += `📋 COMPREHENSIVE TECHNICAL BREAKDOWN:\n`;
+            analysis += `=====================================\n\n`;
+            
+            latestData.teamData.forEach(member => {
+                analysis += `👤 ${member.name.toUpperCase()} (${member.role}):\n`;
+                analysis += `${'='.repeat(member.name.length + member.role.length + 4)}\n\n`;
+                
+                if (member.tasks && member.tasks.length > 0) {
+                    member.tasks.forEach((task, index) => {
+                        analysis += `🔧 TASK ${index + 1}: ${task.title}\n`;
+                        analysis += `${'-'.repeat(task.title.length + 10)}\n`;
+                        
+                        // Technical Overview
+                        if (task.understanding) {
+                            analysis += `📊 TECHNICAL OVERVIEW:\n`;
+                            analysis += `Primary Technology: ${task.understanding.primaryLanguage || 'Not specified'}\n`;
+                            analysis += `Secondary Technology: ${task.understanding.secondaryLanguage || 'N/A'}\n`;
+                            analysis += `Technical Context: ${task.understanding.technicalContext || 'Not specified'}\n\n`;
+                            
+                            analysis += `🎯 TASK PURPOSE & SCOPE:\n`;
+                            analysis += `${task.understanding.taskDescription || task.understanding.summary || 'No description available'}\n\n`;
+                            
+                            if (task.understanding.requirements && task.understanding.requirements.length > 0) {
+                                analysis += `📋 TECHNICAL REQUIREMENTS:\n`;
+                                task.understanding.requirements.forEach((req, reqIndex) => {
+                                    analysis += `${reqIndex + 1}. ${req}\n`;
+                                });
+                                analysis += `\n`;
+                            }
+                        }
+                        
+                        // Current Status Analysis
+                        analysis += `📈 CURRENT STATUS ANALYSIS:\n`;
+                        analysis += `Status: ${task.status.toUpperCase()}\n`;
+                        
+                        if (task.progressMetrics) {
+                            const progress = task.progressMetrics;
+                            const efficiency = progress.estimatedHours > 0 ? 
+                                ((progress.hoursSpent / progress.estimatedHours) * 100).toFixed(1) : 0;
+                            analysis += `Progress: ${progress.completionPercentage}% complete\n`;
+                            analysis += `Time Utilization: ${progress.hoursSpent}/${progress.estimatedHours} hours (${efficiency}% of estimate)\n`;
+                            analysis += `Remaining Effort: ${progress.estimatedHours - progress.hoursSpent} hours\n`;
+                        }
+                        
+                        if (task.priority) {
+                            analysis += `Priority Level: ${task.priority.toUpperCase()}\n`;
+                        }
+                        if (task.complexity) {
+                            analysis += `Technical Complexity: ${task.complexity.toUpperCase()}\n`;
+                        }
+                        if (task.riskLevel) {
+                            analysis += `Risk Assessment: ${task.riskLevel.toUpperCase()}\n`;
+                        }
+                        analysis += `\n`;
+                        
+                        // Technical Progress Notes
+                        if (task.notes && task.notes.trim()) {
+                            analysis += `💬 CURRENT TECHNICAL PROGRESS:\n`;
+                            analysis += `${task.notes.trim()}\n\n`;
+                        }
+                        
+                        // Blockers & Issues
+                        if (task.issue && task.issue.trim()) {
+                            analysis += `🚫 TECHNICAL BLOCKERS:\n`;
+                            analysis += `${task.issue.trim()}\n\n`;
+                        }
+                        
+                        // Next Steps
+                        if (task.nextSteps && task.nextSteps.trim()) {
+                            analysis += `🎯 NEXT TECHNICAL STEPS:\n`;
+                            analysis += `${task.nextSteps.trim()}\n\n`;
+                        }
+                        
+                        // Dependencies Analysis
+                        if (task.understanding?.dependencies && task.understanding.dependencies.length > 0) {
+                            analysis += `🔗 TECHNICAL DEPENDENCIES:\n`;
+                            task.understanding.dependencies.forEach(dep => {
+                                analysis += `- ${dep}\n`;
+                            });
+                            analysis += `\n`;
+                        }
+                        
+                        // Skills Required
+                        if (task.understanding?.skillsRequired && task.understanding.skillsRequired.length > 0) {
+                            analysis += `🛠️ REQUIRED TECHNICAL SKILLS:\n`;
+                            analysis += `${task.understanding.skillsRequired.join(', ')}\n\n`;
+                        }
+                        
+                        // Historical Progress (if available)
+                        if (taskTimelines[member.name] && taskTimelines[member.name][task.title]) {
+                            const timeline = taskTimelines[member.name][task.title];
+                            if (timeline.length > 1) {
+                                analysis += `📊 PROGRESS TIMELINE:\n`;
+                                timeline.slice(-3).forEach(entry => {
+                                    analysis += `${entry.date}: Status was ${entry.status.toUpperCase()}`;
+                                    if (entry.notes && entry.notes.trim()) {
+                                        analysis += ` - ${entry.notes.trim().substring(0, 100)}${entry.notes.length > 100 ? '...' : ''}`;
+                                    }
+                                    analysis += `\n`;
+                                });
+                                analysis += `\n`;
+                            }
+                        }
+                        
+                        analysis += `${'-'.repeat(60)}\n\n`;
+                    });
+                } else {
+                    analysis += `📝 No specific technical tasks currently tracked for this team member.\n\n`;
+                }
+                
+                analysis += `\n`;
+            });
+            
+            // Technical AI Prompts
+            analysis += `🤖 TECHNICAL AI ANALYSIS PROMPTS:\n`;
+            analysis += `=================================\n`;
+            analysis += `Based on this detailed technical task analysis, please provide comprehensive insights on:\n\n`;
+            
+            analysis += `🔍 TASK-SPECIFIC TECHNICAL ANALYSIS:\n`;
+            analysis += `For each task above, please provide a detailed paragraph explaining:\n`;
+            analysis += `- Current technical status and what has been accomplished so far\n`;
+            analysis += `- Technical challenges and complexity assessment based on requirements\n`;
+            analysis += `- Code/implementation approach and architecture decisions\n`;
+            analysis += `- Integration points and technical dependencies analysis\n`;
+            analysis += `- Potential technical risks and mitigation strategies\n`;
+            analysis += `- Performance and scalability considerations\n`;
+            analysis += `- Testing strategy and quality assurance approach\n`;
+            analysis += `- Timeline feasibility based on technical complexity\n\n`;
+            
+            analysis += `🛠️ TECHNICAL RECOMMENDATIONS:\n`;
+            analysis += `- Which tasks need additional technical expertise or resources?\n`;
+            analysis += `- What technical debt or architectural concerns do you identify?\n`;
+            analysis += `- How can technical implementation be optimized for better efficiency?\n`;
+            analysis += `- What technical standards or best practices should be applied?\n`;
+            analysis += `- Which tasks have technical dependencies that could cause delays?\n`;
+            analysis += `- What technical documentation or knowledge sharing is needed?\n`;
+            analysis += `- How should technical reviews and code quality checks be structured?\n\n`;
+            
+            analysis += `Please provide detailed technical explanations that help understand the true status, complexity, and technical requirements of each task in a comprehensive yet accessible manner.\n`;
+            
+            return analysis;
         }
 
         function copyTaskStateAnalysis() {
