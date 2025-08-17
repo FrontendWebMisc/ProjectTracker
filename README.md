@@ -1,27 +1,65 @@
-# Team Progress Tracker
+# Project Tracker - Team Task Management System
 
-## Description
+A comprehensive web-based team task management and AI analysis tool designed for agile teams working with React, Java/Spring Boot, and other modern technologies.
 
-This is a simple, yet powerful, single-page application for tracking the daily and weekly progress of a team. It's built with HTML, CSS, and JavaScript, and it's designed to be used locally in your browser. The application allows you to manage team members, track their status, and generate AI-ready summaries for daily and weekly reports.
+## 🚀 Overview
 
-## Features
+Project Tracker is a single-page application that helps teams manage daily tasks, track progress, and generate AI-powered insights for better project management. The system supports real-time task updates, historical data analysis, and comprehensive reporting features.
 
-*   **Real-time Dashboard:** Live statistics on team status (Active, Blocked, Partially Blocked, In Review).
-*   **Team Member Management:** Easily add and remove team members.
-*   **Individual Progress Tracking:** Track what each team member did yesterday, is doing today, any blockers they have, and any additional notes.
-*   **Task Tracking:** Track individual tasks for each team member with status and issue details.
-*   **Status Tracking:** Set a status for each team member (Active, Blocked, Partially Blocked, In Review).
-*   **AI-Ready Summaries:** Generate detailed daily and weekly summaries with a single click. The summaries are formatted to be easily pasted into an AI for further analysis.
-*   **Data Management:**
-    *   Save daily progress as a JSON file.
-    *   Load data from a previously saved JSON file.
-    *   Clear today's data without removing team members.
-    *   Export daily and weekly summaries as text files.
-*   **Weekly Summary Generator:**
-    *   Load multiple daily JSON files to generate a comprehensive weekly report.
-    *   The weekly summary includes a daily breakdown, individual analysis, common blocker patterns, and trends.
+## ✨ Key Features
 
-## How to Use
+### 📊 Core Task Management
+- **Real-time Task Tracking**: Add, edit, and update tasks with comprehensive status management
+- **Team Member Management**: Complete user profiles with skills, expertise, and role tracking
+- **Progress Monitoring**: Track task completion percentages, time estimates, and blockers
+- **Next Steps Planning**: Define and track actionable next steps for each task
+
+### 🤖 AI-Powered Analysis
+- **Current Task State Analysis**: Generate email-ready status reports for stakeholders
+- **Technical Task Analysis**: Detailed technical breakdowns for developers and architects
+- **Weekly Summary Generation**: Comprehensive weekly progress reports with trends
+- **Historical Trend Analysis**: Multi-day progress tracking and pattern recognition
+
+### 📈 Data Management & Export
+- **Multiple Export Formats**: JSON, CSV, and TXT exports for different use cases
+- **Data Import/Load**: Load historical data from multiple files for analysis
+- **AI Summary Compression**: Optimize summaries for LLM context efficiency
+- **Sample Data**: Pre-loaded realistic development scenarios
+
+## 📚 Documentation
+
+### Getting Started
+- [Installation & Setup](docs/setup-and-installation.md)
+- [Quick Start Guide](docs/quick-start-guide.md)
+- [Configuration Options](docs/configuration.md)
+
+### Core Features
+- [Task Management](docs/task-management.md)
+- [Team Member Management](docs/team-member-management.md)
+- [Daily Workflow](docs/daily-workflow.md)
+
+### AI Analysis Features
+- [Current Task State Analysis](docs/current-task-state-analysis.md)
+- [Technical Task Analysis](docs/technical-task-analysis.md)
+- [Weekly Summary Generator](docs/weekly-summary-generator.md)
+- [AI Summary Compression](docs/ai-summary-compression.md)
+
+### Data Management
+- [Import & Export Features](docs/import-export-features.md)
+- [Data Formats & Structure](docs/data-formats.md)
+- [Sample Data Overview](docs/sample-data.md)
+
+### Advanced Features
+- [User Profile System](docs/user-profile-system.md)
+- [Task Understanding Framework](docs/task-understanding-framework.md)
+- [Historical Analysis](docs/historical-analysis.md)
+
+### Integration & API
+- [GenAI Integration Guide](docs/genai-integration.md)
+- [Custom Prompt Engineering](docs/prompt-engineering.md)
+- [Data Schema Reference](docs/data-schema.md)
+
+## 🔧 Quick Start
 
 1.  Open the `team-tracker-app.html` file in your web browser.
 2.  The application will be pre-populated with sample data. You can clear this data by clicking the "Clear Today" button.
