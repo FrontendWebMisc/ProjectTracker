@@ -32,6 +32,7 @@
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
         }
 
         .header h1 {
@@ -43,6 +44,112 @@
         .date-display {
             font-size: 1.2rem;
             opacity: 0.9;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 1);
+            color: #333;
+            padding: 10px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Dark theme styles */
+        body.dark-theme {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        body.dark-theme .container {
+            background: rgba(30, 30, 50, 0.95);
+        }
+
+        body.dark-theme .header {
+            background: linear-gradient(135deg, #2d3561 0%, #1e2a5e 100%);
+        }
+
+        body.dark-theme .member-card {
+            background: #2a2a3e;
+            border-color: #444;
+        }
+
+        body.dark-theme .member-card:hover {
+            border-color: #667eea;
+        }
+
+        body.dark-theme .member-name {
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .form-group label {
+            color: #ccc;
+        }
+
+        body.dark-theme .form-group input, 
+        body.dark-theme .form-group textarea, 
+        body.dark-theme .form-group select {
+            background: #3a3a4e;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .form-group input:focus, 
+        body.dark-theme .form-group textarea:focus, 
+        body.dark-theme .form-group select:focus {
+            border-color: #667eea;
+        }
+
+        body.dark-theme .summary-section {
+            background: linear-gradient(135deg, #2a2a3e 0%, #3a3a4e 100%);
+        }
+
+        body.dark-theme .summary-content {
+            background: #2a2a3e;
+            border-color: #555;
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .stat-card {
+            background: #2a2a3e;
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .modal-content {
+            background: #2a2a3e;
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .storage-info {
+            background: #2a4a2a;
+            border-color: #4caf50;
+        }
+
+        body.dark-theme .storage-info h4 {
+            color: #4caf50;
+        }
+
+        body.dark-theme .storage-info p {
+            color: #8bc34a;
+        }
+
+        body.dark-theme .task-item {
+            background: #3a3a4e !important;
+            border-color: #555 !important;
         }
 
         .main-content {
@@ -338,6 +445,7 @@
 <body>
     <div class="container">
         <div class="header">
+            <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙 Dark</button>
             <h1>🚀 Team Progress Tracker</h1>
             <div class="date-display" id="currentDate"></div>
         </div>
@@ -442,6 +550,9 @@
         </div>
     </div>
 
+    <!-- Include sample data configuration -->
+    <script src="sample-data.js"></script>
+    
     <script>
         let teamData = [];
         let memberIdCounter = 1;
@@ -452,6 +563,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateCurrentDate();
             setDefaultWeekStart();
+            loadThemePreference();
             renderTeam();
         });
 
@@ -465,6 +577,34 @@
             };
             document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
             currentDate = now.toISOString().split('T')[0];
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.getElementById('themeToggle');
+            
+            if (body.classList.contains('dark-theme')) {
+                body.classList.remove('dark-theme');
+                themeToggle.textContent = '🌙 Dark';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark-theme');
+                themeToggle.textContent = '☀️ Light';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        function loadThemePreference() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeToggle = document.getElementById('themeToggle');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                themeToggle.textContent = '☀️ Light';
+            } else {
+                document.body.classList.remove('dark-theme');
+                themeToggle.textContent = '🌙 Dark';
+            }
         }
 
         function setDefaultWeekStart() {
@@ -635,6 +775,13 @@
                                       style="min-height: 60px;">${task.issue || ''}</textarea>
                         </div>
                         ` : ''}
+                        
+                        <div class="form-group">
+                            <label>📋 Task Notes/Current Status:</label>
+                            <textarea placeholder="Add notes about current progress, blockers, or next steps..."
+                                      onchange="updateTask(${memberId}, ${index}, 'notes', this.value)"
+                                      style="min-height: 60px;">${task.notes || ''}</textarea>
+                        </div>
                     </div>
                 `;
             });
@@ -648,7 +795,8 @@
                 member.tasks.push({
                     title: '',
                     status: 'active',
-                    issue: ''
+                    issue: '',
+                    notes: ''
                 });
                 renderTeam();
             }
@@ -791,6 +939,9 @@
                         summary += `     ${taskIndex + 1}. ${task.title} [${task.status.toUpperCase().replace('-', ' ')}]\n`;
                         if (task.issue && task.status !== 'active' && task.status !== 'completed') {
                             summary += `        Issue: ${task.issue}\n`;
+                        }
+                        if (task.notes && task.notes.trim()) {
+                            summary += `        Notes: ${task.notes.trim()}\n`;
                         }
                     });
                 }
@@ -975,11 +1126,16 @@
                         if (!allTasks.some(t => t.title === task.title)) {
                             allTasks.push({
                                 title: task.title,
-                                statusHistory: [{date: day.date, status: task.status}]
+                                statusHistory: [{date: day.date, status: task.status}],
+                                latestNotes: task.notes || '',
+                                latestIssue: task.issue || ''
                             });
                         } else {
                             const existingTask = allTasks.find(t => t.title === task.title);
                             existingTask.statusHistory.push({date: day.date, status: task.status});
+                            // Update with latest notes and issue
+                            if (task.notes) existingTask.latestNotes = task.notes;
+                            if (task.issue) existingTask.latestIssue = task.issue;
                         }
                     });
                 });
@@ -989,6 +1145,12 @@
                     allTasks.forEach(task => {
                         const statusChanges = task.statusHistory.map(h => `${h.date}: ${h.status}`).join(' → ');
                         summary += `    ${task.title}: ${statusChanges}\n`;
+                        if (task.latestIssue && task.latestIssue.trim()) {
+                            summary += `      Latest Issue: ${task.latestIssue.trim()}\n`;
+                        }
+                        if (task.latestNotes && task.latestNotes.trim()) {
+                            summary += `      Latest Notes: ${task.latestNotes.trim()}\n`;
+                        }
                     });
                 }
 
@@ -1144,6 +1306,7 @@
                         member.tasks.forEach(task => {
                             task.status = 'active';
                             task.issue = '';
+                            task.notes = '';
                         });
                     }
                     member.lastUpdated = new Date().toISOString();
@@ -1165,86 +1328,16 @@
             }
         }
 
-        // Initialize with sample data for demonstration
-        function initializeSampleData() {
-            teamData = [
-                {
-                    id: 1,
-                    name: 'Alice Johnson',
-                    role: 'Frontend Developer',
-                    status: 'active',
-                    yesterday: 'Completed user authentication UI components',
-                    today: 'Working on dashboard responsive design',
-                    blockers: '',
-                    notes: 'Need UX review for mobile layouts',
-                    tasks: [
-                        {
-                            title: 'Dashboard responsive design',
-                            status: 'active',
-                            issue: ''
-                        },
-                        {
-                            title: 'User profile page',
-                            status: 'partially-blocked',
-                            issue: 'Waiting for design assets from UX team'
-                        }
-                    ],
-                    lastUpdated: new Date().toISOString()
-                },
-                {
-                    id: 2,
-                    name: 'Bob Smith',
-                    role: 'Backend Developer',
-                    status: 'partially-blocked',
-                    yesterday: 'Set up API endpoints for user management',
-                    today: 'Implementing payment gateway integration',
-                    blockers: 'Waiting for payment provider API keys',
-                    notes: 'Can work on error handling meanwhile',
-                    tasks: [
-                        {
-                            title: 'Payment gateway integration',
-                            status: 'partially-blocked',
-                            issue: 'Waiting for payment provider API keys'
-                        },
-                        {
-                            title: 'Error handling for API endpoints',
-                            status: 'active',
-                            issue: ''
-                        }
-                    ],
-                    lastUpdated: new Date().toISOString()
-                },
-                {
-                    id: 3,
-                    name: 'Carol Davis',
-                    role: 'QA Engineer',
-                    status: 'reviewing',
-                    yesterday: 'Executed regression tests for login module',
-                    today: 'Code review for new API endpoints',
-                    blockers: '',
-                    notes: 'Found 2 minor UI issues, documented in Jira',
-                    tasks: [
-                        {
-                            title: 'Code review for new API endpoints',
-                            status: 'reviewing',
-                            issue: ''
-                        },
-                        {
-                            title: 'UI testing for dashboard',
-                            status: 'active',
-                            issue: ''
-                        }
-                    ],
-                    lastUpdated: new Date().toISOString()
-                }
-            ];
-            memberIdCounter = 4;
+        // Load sample data from external file
+        function loadSampleData() {
+            teamData = initializeSampleData();
+            memberIdCounter = TEAM_CONFIG.startingMemberIdCounter;
             renderTeam();
         }
 
         // Load sample data on first visit
         if (teamData.length === 0) {
-            initializeSampleData();
+            loadSampleData();
         }
     </script>
 </body>
