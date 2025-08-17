@@ -556,6 +556,7 @@
                 <button class="btn small" onclick="copyWeeklySummary()">📋 Copy Summary</button>
                 <button class="btn small" onclick="exportWeeklySummary()">💾 Export TXT</button>
                 <button class="btn small" onclick="exportWeeklySummaryCSV()">📊 Export CSV</button>
+                <button class="btn small" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);" onclick="compressWeeklySummaryContent()">🗜️ Compress AI Summary</button>
             </div>
         </div>
     </div>
@@ -582,6 +583,7 @@
                 <button class="btn small" onclick="copyTaskStateAnalysis()">📋 Copy Analysis</button>
                 <button class="btn small" onclick="exportTaskStateAnalysis()">💾 Export Analysis</button>
                 <button class="btn small" onclick="exportTaskStateCSV()">📊 Export CSV</button>
+                <button class="btn small" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);" onclick="compressTaskStateContent()">🗜️ Compress AI Summary</button>
             </div>
         </div>
     </div>
@@ -2414,6 +2416,104 @@
             URL.revokeObjectURL(url);
             
             alert(`Task state data exported as CSV`);
+        }
+
+        // AI Summary Compression Functions
+        function compressAIContent(content) {
+            if (!content || content.trim().length === 0) {
+                return content;
+            }
+            
+            let compressed = content
+                // Remove excessive whitespace and empty lines
+                .replace(/\n\s*\n\s*\n/g, '\n\n')  // Replace 3+ empty lines with 2
+                .replace(/\n\s*\n\s*\n/g, '\n\n')  // Run again to catch remaining
+                .replace(/[ \t]+/g, ' ')            // Replace multiple spaces/tabs with single space
+                .replace(/\n /g, '\n')              // Remove leading spaces after newlines
+                .replace(/ \n/g, '\n')              // Remove trailing spaces before newlines
+                
+                // Optimize section separators
+                .replace(/={3,}/g, '===')           // Reduce excessive equal signs
+                .replace(/-{3,}/g, '---')           // Reduce excessive dashes
+                .replace(/_{3,}/g, '___')           // Reduce excessive underscores
+                
+                // Convert multi-line bullet points to single line (MAIN COMPRESSION FEATURE)
+                .replace(/(\n\s*[-•]\s*[^\n]+)(\n\s*[-•]\s*[^\n]+)+/g, function(match) {
+                    // Convert multiple bullet points into single line with " - " separators
+                    return match
+                        .replace(/\n\s*[-•]\s*/g, ' - ')  // Replace newlines + bullets with " - "
+                        .replace(/^\s*[-•]\s*/, '- ');    // Clean up first bullet
+                })
+                
+                // Convert multi-line numbered lists to single line
+                .replace(/(\n\s*\d+\.\s*[^\n]+)(\n\s*\d+\.\s*[^\n]+)+/g, function(match) {
+                    return match
+                        .replace(/\n\s*\d+\.\s*/g, ' - ')  // Replace numbered items with " - "
+                        .replace(/^\s*\d+\.\s*/, '- ');    // Clean up first item
+                })
+                
+                // Compress repetitive patterns
+                .replace(/\n\s*•\s*/g, '\n• ')      // Standardize remaining bullet points
+                .replace(/\n\s*-\s*/g, '\n- ')      // Standardize remaining dashes
+                
+                // Remove redundant spacing around headers
+                .replace(/\n\s*([A-Z][A-Z\s&:]+):\s*\n/g, '\n$1:\n')
+                .replace(/\n\s*(🎯|📊|📋|🔧|💬|🚫|🔗|🛠️|📈|🤖|👤|✅|⚠️|🔥|⚡|📝)\s*/g, '\n$1 ')
+                
+                // Optimize common phrases
+                .replace(/\n\s*Status:\s*/g, '\nStatus: ')
+                .replace(/\n\s*Priority:\s*/g, '\nPriority: ')
+                .replace(/\n\s*Progress:\s*/g, '\nProgress: ')
+                .replace(/\n\s*Dependencies:\s*/g, '\nDeps: ')
+                .replace(/\n\s*Requirements:\s*/g, '\nReqs: ')
+                .replace(/estimated effort/gi, 'effort')
+                .replace(/implementation/gi, 'impl')
+                .replace(/development/gi, 'dev')
+                .replace(/application/gi, 'app')
+                .replace(/configuration/gi, 'config')
+                .replace(/authentication/gi, 'auth')
+                .replace(/authorization/gi, 'authz')
+                
+                // Final cleanup
+                .trim();
+            
+            return compressed;
+        }
+
+        function compressTaskStateContent() {
+            const contentElement = document.getElementById('taskStateContent');
+            const currentContent = contentElement.textContent;
+            
+            if (!currentContent || currentContent === 'Load historical data files and click "Analyze Tasks" to generate comprehensive task state analysis for GenAI...') {
+                alert('Please generate a summary first!');
+                return;
+            }
+            
+            const compressedContent = compressAIContent(currentContent);
+            const originalLength = currentContent.length;
+            const compressedLength = compressedContent.length;
+            const compressionRatio = ((originalLength - compressedLength) / originalLength * 100).toFixed(1);
+            
+            contentElement.textContent = compressedContent;
+            alert(`Summary compressed! Reduced from ${originalLength} to ${compressedLength} characters (${compressionRatio}% reduction)`);
+        }
+
+        function compressWeeklySummaryContent() {
+            const contentElement = document.getElementById('weeklySummaryContent');
+            const currentContent = contentElement.textContent;
+            
+            if (!currentContent || currentContent === 'Select week start date and load daily data files to generate weekly summary...') {
+                alert('Please generate a weekly summary first!');
+                return;
+            }
+            
+            const compressedContent = compressAIContent(currentContent);
+            const originalLength = currentContent.length;
+            const compressedLength = compressedContent.length;
+            const compressionRatio = ((originalLength - compressedLength) / originalLength * 100).toFixed(1);
+            
+            contentElement.textContent = compressedContent;
+            alert(`Weekly summary compressed! Reduced from ${originalLength} to ${compressedLength} characters (${compressionRatio}% reduction)`);
         }
     </script>
 </body>
