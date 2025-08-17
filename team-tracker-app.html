@@ -473,6 +473,7 @@
                 
                 <button class="btn warning" onclick="generateDailySummary()">📊 Daily Summary</button>
                 <button class="btn purple" onclick="showWeeklySummary()">📈 Weekly Summary</button>
+                <button class="btn" style="background: linear-gradient(135deg, #e91e63 0%, #ad1457 100%);" onclick="showTaskStateAnalysis()">🎯 Current Task State</button>
                 <button class="btn small" onclick="clearToday()">🗑️ Clear Today</button>
             </div>
 
@@ -555,6 +556,31 @@
                 <button class="btn small" onclick="copyWeeklySummary()">📋 Copy Summary</button>
                 <button class="btn small" onclick="exportWeeklySummary()">💾 Export TXT</button>
                 <button class="btn small" onclick="exportWeeklySummaryCSV()">📊 Export CSV</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task State Analysis Modal -->
+    <div id="taskStateModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <span class="close" onclick="closeTaskStateModal()">&times;</span>
+            <h2>🎯 Current Task State Analysis</h2>
+            <div class="form-group">
+                <label>Load Historical Data Files (select multiple daily JSON or CSV files):</label>
+                <input type="file" id="taskStateDataFiles" multiple accept=".json,.csv" onchange="loadTaskStateFiles()">
+            </div>
+            <div id="taskStateFiles" style="margin-bottom: 20px;"></div>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="btn info small" onclick="generateTaskStateAnalysis()">🔍 Analyze Tasks</button>
+                <button class="btn small" onclick="generateCurrentTaskSummary()">📊 Current State Summary</button>
+            </div>
+            <div class="summary-content" id="taskStateContent" style="max-height: 400px;">
+                Load historical data files and click "Analyze Tasks" to generate comprehensive task state analysis for GenAI...
+            </div>
+            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn small" onclick="copyTaskStateAnalysis()">📋 Copy Analysis</button>
+                <button class="btn small" onclick="exportTaskStateAnalysis()">💾 Export Analysis</button>
+                <button class="btn small" onclick="exportTaskStateCSV()">📊 Export CSV</button>
             </div>
         </div>
     </div>
@@ -1607,11 +1633,15 @@
         window.onclick = function(event) {
             const memberModal = document.getElementById('memberModal');
             const weeklyModal = document.getElementById('weeklySummaryModal');
+            const taskStateModal = document.getElementById('taskStateModal');
             if (event.target === memberModal) {
                 closeMemberModal();
             }
             if (event.target === weeklyModal) {
                 closeWeeklySummaryModal();
+            }
+            if (event.target === taskStateModal) {
+                closeTaskStateModal();
             }
         }
 
@@ -1625,6 +1655,641 @@
         // Load sample data on first visit
         if (teamData.length === 0) {
             loadSampleData();
+        }
+
+        // Task State Analysis Functions
+        let taskStateData = [];
+
+        function showTaskStateAnalysis() {
+            document.getElementById('taskStateModal').style.display = 'block';
+        }
+
+        function closeTaskStateModal() {
+            document.getElementById('taskStateModal').style.display = 'none';
+            document.getElementById('taskStateContent').textContent = 'Load historical data files and click "Analyze Tasks" to generate comprehensive task state analysis for GenAI...';
+            document.getElementById('taskStateDataFiles').value = '';
+            document.getElementById('taskStateFiles').innerHTML = '';
+            taskStateData = [];
+        }
+
+        function loadTaskStateFiles() {
+            const files = document.getElementById('taskStateDataFiles').files;
+            taskStateData = [];
+            let filesProcessed = 0;
+
+            if (files.length === 0) return;
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    
+                    try {
+                        // Check if it's a CSV file
+                        if (file.name.toLowerCase().endsWith('.csv') || content.startsWith('Date,Member Name,Role')) {
+                            const dailyDataArray = parseCSVToWeeklyData(content, file.name);
+                            if (dailyDataArray && Array.isArray(dailyDataArray)) {
+                                taskStateData.push(...dailyDataArray);
+                            }
+                        } else {
+                            // Try to parse as JSON
+                            const data = JSON.parse(content);
+                            if (data.teamData && data.date) {
+                                taskStateData.push(data);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error reading file:', file.name, error);
+                    }
+                    
+                    filesProcessed++;
+                    if (filesProcessed === files.length) {
+                        // Sort by date
+                        taskStateData.sort((a, b) => new Date(a.date) - new Date(b.date));
+                        updateTaskStateFilesDisplay();
+                    }
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        function updateTaskStateFilesDisplay() {
+            const display = document.getElementById('taskStateFiles');
+            if (taskStateData.length > 0) {
+                const dateRange = taskStateData.length > 1 ? 
+                    `${taskStateData[0].date} to ${taskStateData[taskStateData.length - 1].date}` : 
+                    taskStateData[0].date;
+                display.innerHTML = `<strong>📅 Loaded ${taskStateData.length} daily files:</strong><br>` +
+                    `<span style="color: #666;">Date Range: ${dateRange}</span><br>` +
+                    taskStateData.map(d => `📊 ${d.date} (${d.teamData.length} members, ${d.teamData.reduce((total, m) => total + (m.tasks ? m.tasks.length : 0), 0)} tasks)`).join('<br>');
+            } else {
+                display.innerHTML = '';
+            }
+        }
+
+        function generateTaskStateAnalysis() {
+            if (taskStateData.length === 0) {
+                alert('Please load historical data files first');
+                return;
+            }
+
+            const analysis = analyzeTaskStates();
+            document.getElementById('taskStateContent').textContent = analysis;
+        }
+
+        function generateCurrentTaskSummary() {
+            if (taskStateData.length === 0) {
+                alert('Please load historical data files first');
+                return;
+            }
+
+            const summary = generateCurrentStateSummary();
+            document.getElementById('taskStateContent').textContent = summary;
+        }
+
+        function analyzeTaskStates() {
+            const now = new Date();
+            const dateRange = taskStateData.length > 1 ? 
+                `${taskStateData[0].date} to ${taskStateData[taskStateData.length - 1].date}` : 
+                taskStateData[0].date;
+
+            let analysis = `COMPREHENSIVE TASK STATE ANALYSIS - ${now.toLocaleDateString()}\n`;
+            analysis += `=================================================================\n\n`;
+            analysis += `DATA OVERVIEW:\n`;
+            analysis += `- Analysis Period: ${dateRange}\n`;
+            analysis += `- Total Days Analyzed: ${taskStateData.length}\n`;
+            analysis += `- Total Data Points: ${taskStateData.reduce((total, d) => total + d.teamData.length, 0)}\n`;
+            analysis += `- Total Tasks Tracked: ${taskStateData.reduce((total, d) => total + d.teamData.reduce((taskTotal, m) => taskTotal + (m.tasks ? m.tasks.length : 0), 0), 0)}\n\n`;
+
+            // Build comprehensive task timeline
+            const taskTimelines = buildTaskTimelines();
+            
+            analysis += `TASK EVOLUTION ANALYSIS:\n`;
+            analysis += `========================\n\n`;
+
+            // Analyze each unique task across all team members
+            Object.entries(taskTimelines).forEach(([memberName, memberTasks]) => {
+                analysis += `${memberName.toUpperCase()}:\n`;
+                analysis += `${'='.repeat(memberName.length + 1)}\n`;
+                
+                Object.entries(memberTasks).forEach(([taskTitle, timeline]) => {
+                    analysis += `\n📋 TASK: ${taskTitle}\n`;
+                    analysis += `${'-'.repeat(taskTitle.length + 8)}\n`;
+                    
+                    // Timeline analysis
+                    analysis += `🕐 TIMELINE (${timeline.length} entries):\n`;
+                    timeline.forEach((entry, index) => {
+                        const statusChange = index > 0 && entry.status !== timeline[index - 1].status ? 
+                            ` [CHANGED FROM ${timeline[index - 1].status.toUpperCase()}]` : '';
+                        analysis += `  ${entry.date}: ${entry.status.toUpperCase()}${statusChange}\n`;
+                        if (entry.notes && entry.notes.trim()) {
+                            analysis += `    📝 Notes: ${entry.notes.trim()}\n`;
+                        }
+                        if (entry.issue && entry.issue.trim()) {
+                            analysis += `    ⚠️ Issue: ${entry.issue.trim()}\n`;
+                        }
+                    });
+
+                    // Task insights
+                    const latestEntry = timeline[timeline.length - 1];
+                    const firstEntry = timeline[0];
+                    const daysSinceStart = Math.ceil((new Date(latestEntry.date) - new Date(firstEntry.date)) / (1000 * 60 * 60 * 24)) + 1;
+                    const statusChanges = timeline.reduce((changes, entry, index) => 
+                        index > 0 && entry.status !== timeline[index - 1].status ? changes + 1 : changes, 0);
+                    
+                    analysis += `\n🔍 TASK INSIGHTS:\n`;
+                    analysis += `  • Current Status: ${latestEntry.status.toUpperCase()}\n`;
+                    analysis += `  • Days in Progress: ${daysSinceStart}\n`;
+                    analysis += `  • Status Changes: ${statusChanges}\n`;
+                    analysis += `  • Stability: ${statusChanges === 0 ? 'STABLE' : statusChanges <= 2 ? 'MODERATE' : 'HIGH VOLATILITY'}\n`;
+                    
+                    // Pattern detection
+                    const blockedDays = timeline.filter(e => e.status.includes('blocked')).length;
+                    const activeDays = timeline.filter(e => e.status === 'active').length;
+                    const reviewDays = timeline.filter(e => e.status === 'reviewing').length;
+                    const completedDays = timeline.filter(e => e.status === 'completed').length;
+                    
+                    analysis += `  • Activity Pattern: Active(${activeDays}d), Blocked(${blockedDays}d), Review(${reviewDays}d), Completed(${completedDays}d)\n`;
+                    
+                    if (blockedDays > 0) {
+                        const blockageRate = ((blockedDays / timeline.length) * 100).toFixed(1);
+                        analysis += `  • Blockage Rate: ${blockageRate}% (${blockedDays}/${timeline.length} days)\n`;
+                    }
+
+                    // Risk assessment
+                    if (latestEntry.status.includes('blocked')) {
+                        analysis += `  🚨 RISK: Currently blocked - requires immediate attention\n`;
+                    } else if (daysSinceStart > 7 && statusChanges > 3) {
+                        analysis += `  ⚠️ RISK: Long duration with multiple status changes - may need reassessment\n`;
+                    } else if (blockedDays > activeDays && latestEntry.status === 'active') {
+                        analysis += `  ⚠️ RISK: More blocked days than active - monitor closely\n`;
+                    }
+
+                    // Get task understanding if available
+                    if (latestEntry.understanding) {
+                        analysis += `\n🧠 TASK UNDERSTANDING:\n`;
+                        analysis += `  Summary: ${latestEntry.understanding.summary}\n`;
+                        analysis += `  Technical Context: ${latestEntry.understanding.technicalContext}\n`;
+                        analysis += `  Business Impact: ${latestEntry.understanding.businessImpact}\n`;
+                        analysis += `  Estimated Effort: ${latestEntry.understanding.estimatedEffort}\n`;
+                        analysis += `  Required Skills: ${latestEntry.understanding.skillsRequired.join(', ')}\n`;
+                        if (latestEntry.understanding.dependencies && latestEntry.understanding.dependencies.length > 0) {
+                            analysis += `  Dependencies: ${latestEntry.understanding.dependencies.join(', ')}\n`;
+                        }
+                    }
+
+                    analysis += `\n`;
+                });
+                analysis += `\n`;
+            });
+
+            // Team-wide task analytics
+            analysis += `TEAM-WIDE TASK ANALYTICS:\n`;
+            analysis += `========================\n\n`;
+            
+            const teamStats = calculateTeamTaskStats(taskTimelines);
+            analysis += `📊 OVERALL METRICS:\n`;
+            analysis += `  • Total Unique Tasks: ${teamStats.totalTasks}\n`;
+            analysis += `  • Currently Active Tasks: ${teamStats.activeTasks}\n`;
+            analysis += `  • Currently Blocked Tasks: ${teamStats.blockedTasks}\n`;
+            analysis += `  • Tasks in Review: ${teamStats.reviewTasks}\n`;
+            analysis += `  • Completed Tasks: ${teamStats.completedTasks}\n`;
+            analysis += `  • Average Task Duration: ${teamStats.avgDuration.toFixed(1)} days\n`;
+            analysis += `  • Team Velocity: ${teamStats.velocity.toFixed(1)} tasks/day\n`;
+            analysis += `  • Task Completion Rate: ${teamStats.completionRate.toFixed(1)}%\n\n`;
+
+            // Blocker analysis
+            const blockerPatterns = analyzeBlockerPatterns();
+            if (blockerPatterns.length > 0) {
+                analysis += `🚧 BLOCKER PATTERN ANALYSIS:\n`;
+                blockerPatterns.forEach(pattern => {
+                    analysis += `  • "${pattern.keyword}": ${pattern.frequency} occurrences across ${pattern.tasks} tasks\n`;
+                    analysis += `    Affected members: ${pattern.members.join(', ')}\n`;
+                    analysis += `    Avg resolution time: ${pattern.avgResolutionDays.toFixed(1)} days\n\n`;
+                });
+            }
+
+            // AI prompts for GenAI
+            analysis += `GENAI ANALYSIS PROMPTS:\n`;
+            analysis += `======================\n`;
+            analysis += `Based on this comprehensive task state analysis, please provide:\n\n`;
+            analysis += `1. TASK PRIORITIZATION:\n`;
+            analysis += `   - Which tasks need immediate attention and why?\n`;
+            analysis += `   - What's the optimal task sequence for each team member?\n`;
+            analysis += `   - Which tasks are at risk of missing deadlines?\n\n`;
+            
+            analysis += `2. RESOURCE OPTIMIZATION:\n`;
+            analysis += `   - Are team members working on tasks matching their skillsets?\n`;
+            analysis += `   - Where should we reallocate resources for better efficiency?\n`;
+            analysis += `   - Which team members need additional support or training?\n\n`;
+            
+            analysis += `3. BLOCKER RESOLUTION:\n`;
+            analysis += `   - What are the root causes of recurring blockers?\n`;
+            analysis += `   - Which blockers have the highest impact on team velocity?\n`;
+            analysis += `   - What preventive measures can reduce future blockages?\n\n`;
+            
+            analysis += `4. PROCESS IMPROVEMENT:\n`;
+            analysis += `   - What patterns indicate process inefficiencies?\n`;
+            analysis += `   - Which tasks have optimal completion patterns to replicate?\n`;
+            analysis += `   - How can we improve task estimation and planning?\n\n`;
+            
+            analysis += `5. RISK ASSESSMENT:\n`;
+            analysis += `   - Which projects/deliverables are at highest risk?\n`;
+            analysis += `   - What early warning signs should we monitor?\n`;
+            analysis += `   - Which dependencies pose the greatest threat to timelines?\n\n`;
+            
+            analysis += `6. PERFORMANCE INSIGHTS:\n`;
+            analysis += `   - How is each team member performing relative to their capacity?\n`;
+            analysis += `   - What are the optimal task types for each individual?\n`;
+            analysis += `   - Where do we see signs of burnout or underutilization?\n\n`;
+            
+            analysis += `7. STRATEGIC RECOMMENDATIONS:\n`;
+            analysis += `   - What changes would most improve team productivity?\n`;
+            analysis += `   - How should we adjust sprint planning based on these insights?\n`;
+            analysis += `   - What skills gaps need to be addressed for future tasks?\n`;
+
+            return analysis;
+        }
+
+        function buildTaskTimelines() {
+            const taskTimelines = {};
+            
+            taskStateData.forEach(dayData => {
+                dayData.teamData.forEach(member => {
+                    if (!taskTimelines[member.name]) {
+                        taskTimelines[member.name] = {};
+                    }
+                    
+                    if (member.tasks && member.tasks.length > 0) {
+                        member.tasks.forEach(task => {
+                            if (!task.title || task.title.trim() === '') return;
+                            
+                            if (!taskTimelines[member.name][task.title]) {
+                                taskTimelines[member.name][task.title] = [];
+                            }
+                            
+                            taskTimelines[member.name][task.title].push({
+                                date: dayData.date,
+                                status: task.status || 'unknown',
+                                notes: task.notes || '',
+                                issue: task.issue || '',
+                                understanding: task.understanding || null
+                            });
+                        });
+                    }
+                });
+            });
+            
+            return taskTimelines;
+        }
+
+        function calculateTeamTaskStats(taskTimelines) {
+            let totalTasks = 0;
+            let activeTasks = 0;
+            let blockedTasks = 0;
+            let reviewTasks = 0;
+            let completedTasks = 0;
+            let totalDuration = 0;
+            let taskCount = 0;
+            
+            Object.values(taskTimelines).forEach(memberTasks => {
+                Object.values(memberTasks).forEach(timeline => {
+                    totalTasks++;
+                    taskCount++;
+                    
+                    const latestEntry = timeline[timeline.length - 1];
+                    const firstEntry = timeline[0];
+                    const duration = Math.ceil((new Date(latestEntry.date) - new Date(firstEntry.date)) / (1000 * 60 * 60 * 24)) + 1;
+                    totalDuration += duration;
+                    
+                    switch (latestEntry.status) {
+                        case 'active':
+                            activeTasks++;
+                            break;
+                        case 'blocked':
+                        case 'partially-blocked':
+                            blockedTasks++;
+                            break;
+                        case 'reviewing':
+                            reviewTasks++;
+                            break;
+                        case 'completed':
+                            completedTasks++;
+                            break;
+                    }
+                });
+            });
+            
+            const avgDuration = taskCount > 0 ? totalDuration / taskCount : 0;
+            const velocity = taskStateData.length > 0 ? completedTasks / taskStateData.length : 0;
+            const completionRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+            
+            return {
+                totalTasks,
+                activeTasks,
+                blockedTasks,
+                reviewTasks,
+                completedTasks,
+                avgDuration,
+                velocity,
+                completionRate
+            };
+        }
+
+        function analyzeBlockerPatterns() {
+            const blockerData = {};
+            
+            taskStateData.forEach(dayData => {
+                dayData.teamData.forEach(member => {
+                    if (member.tasks) {
+                        member.tasks.forEach(task => {
+                            if (task.issue && task.issue.trim()) {
+                                const keywords = task.issue.toLowerCase().split(/[\s,.-]+/)
+                                    .filter(word => word.length > 3);
+                                
+                                keywords.forEach(keyword => {
+                                    if (!blockerData[keyword]) {
+                                        blockerData[keyword] = {
+                                            frequency: 0,
+                                            tasks: new Set(),
+                                            members: new Set(),
+                                            dates: []
+                                        };
+                                    }
+                                    
+                                    blockerData[keyword].frequency++;
+                                    blockerData[keyword].tasks.add(task.title);
+                                    blockerData[keyword].members.add(member.name);
+                                    blockerData[keyword].dates.push(dayData.date);
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+            
+            return Object.entries(blockerData)
+                .filter(([keyword, data]) => data.frequency >= 2)
+                .map(([keyword, data]) => ({
+                    keyword,
+                    frequency: data.frequency,
+                    tasks: data.tasks.size,
+                    members: Array.from(data.members),
+                    avgResolutionDays: data.dates.length > 1 ? 
+                        (new Date(Math.max(...data.dates.map(d => new Date(d)))) - 
+                         new Date(Math.min(...data.dates.map(d => new Date(d))))) / (1000 * 60 * 60 * 24) / data.frequency : 0
+                }))
+                .sort((a, b) => b.frequency - a.frequency);
+        }
+
+        function generateCurrentStateSummary() {
+            if (taskStateData.length === 0) return '';
+            
+            // Get the most recent data (files are already sorted by date)
+            const latestData = taskStateData[taskStateData.length - 1];
+            const now = new Date();
+            
+            // Build task timeline to get latest comments
+            const taskTimelines = buildTaskTimelines();
+            
+            let summary = `CURRENT TASK STATE SUMMARY - ${latestData.date}\n`;
+            summary += `=============================================\n\n`;
+            
+            summary += `📊 CURRENT SNAPSHOT:\n`;
+            summary += `- As of: ${latestData.date}\n`;
+            summary += `- Team Members: ${latestData.teamData.length}\n`;
+            summary += `- Total Active Tasks: ${latestData.teamData.reduce((total, m) => total + (m.tasks ? m.tasks.length : 0), 0)}\n\n`;
+            
+            summary += `👥 INDIVIDUAL CURRENT STATES:\n`;
+            summary += `=============================\n\n`;
+            
+            latestData.teamData.forEach(member => {
+                summary += `${member.name.toUpperCase()} (${member.role}):\n`;
+                summary += `Status: ${member.status.toUpperCase()}\n`;
+                
+                // Add member skill context for AI understanding
+                if (member.skillsets && member.skillsets.length > 0) {
+                    const topSkills = member.skillsets.slice(0, 2).map(category => 
+                        category.skills.filter(skill => skill.proficiency === 'Expert' || skill.proficiency === 'Advanced')
+                                     .slice(0, 3)
+                                     .map(skill => skill.name)
+                    ).flat();
+                    if (topSkills.length > 0) {
+                        summary += `🎖️ Key Skills: ${topSkills.join(', ')}\n`;
+                    }
+                }
+                
+                if (member.today && member.today.trim()) {
+                    summary += `🎯 Today's Focus: ${member.today.trim()}\n`;
+                }
+                
+                if (member.blockers && member.blockers.trim()) {
+                    summary += `🚧 Current Blockers: ${member.blockers.trim()}\n`;
+                }
+                
+                if (member.tasks && member.tasks.length > 0) {
+                    summary += `📋 Current Tasks (${member.tasks.length}):\n`;
+                    member.tasks.forEach((task, index) => {
+                        summary += `\n${index + 1}. TASK DETAILS:\n`;
+                        summary += `${'='.repeat(20)}\n`;
+                        
+                        // Task Title
+                        summary += `Task Title:\n${task.title}\n\n`;
+                        
+                        // Primary Language
+                        const primaryLang = task.understanding?.primaryLanguage || 'Not specified';
+                        summary += `Primary language:\n${primaryLang}\n\n`;
+                        
+                        // Secondary Language
+                        const secondaryLang = task.understanding?.secondaryLanguage || 'N/A';
+                        summary += `Secondary language:\n${secondaryLang}\n\n`;
+                        
+                        // Task Description
+                        const taskDesc = task.understanding?.taskDescription || task.understanding?.summary || 'No description available';
+                        summary += `Task Description:\n${taskDesc}\n\n`;
+                        
+                        // Requirements
+                        summary += `Requirements:\n`;
+                        if (task.understanding?.requirements && task.understanding.requirements.length > 0) {
+                            task.understanding.requirements.forEach(req => {
+                                summary += `${req}\n`;
+                            });
+                        } else {
+                            summary += `No specific requirements documented\n`;
+                        }
+                        summary += `\n`;
+                        
+                        // Latest user comment (from most recent file based on date)
+                        let latestComment = 'No recent comments';
+                        if (taskTimelines[member.name] && taskTimelines[member.name][task.title]) {
+                            const timeline = taskTimelines[member.name][task.title];
+                            // Get the most recent entry with notes
+                            for (let i = timeline.length - 1; i >= 0; i--) {
+                                if (timeline[i].notes && timeline[i].notes.trim()) {
+                                    latestComment = timeline[i].notes.trim();
+                                    break;
+                                }
+                            }
+                        } else if (task.notes && task.notes.trim()) {
+                            latestComment = task.notes.trim();
+                        }
+                        summary += `Latest user comment:\n${latestComment}\n\n`;
+                        
+                        // Current Status and Issues
+                        summary += `Current Status: ${task.status.toUpperCase()}\n`;
+                        if (task.issue && task.issue.trim()) {
+                            summary += `⚠️ Current Issue: ${task.issue.trim()}\n`;
+                        }
+                        
+                        // Additional context for AI
+                        if (task.priority) {
+                            summary += `🔥 Priority: ${task.priority.toUpperCase()}\n`;
+                        }
+                        if (task.progressMetrics) {
+                            const progress = task.progressMetrics;
+                            summary += `📈 Progress: ${progress.completionPercentage}% (${progress.hoursSpent}/${progress.estimatedHours}h)\n`;
+                        }
+                        if (task.understanding?.dependencies && task.understanding.dependencies.length > 0) {
+                            summary += `🔗 Dependencies: ${task.understanding.dependencies.join(', ')}\n`;
+                        }
+                        
+                        summary += `\n${'-'.repeat(50)}\n`;
+                    });
+                } else {
+                    summary += `📋 No specific tasks tracked\n`;
+                }
+                
+                summary += `\n`;
+            });
+            
+            // Immediate attention items
+            const urgentItems = [];
+            latestData.teamData.forEach(member => {
+                if (member.status === 'blocked') {
+                    urgentItems.push(`🔴 ${member.name} is BLOCKED`);
+                }
+                if (member.tasks) {
+                    member.tasks.forEach(task => {
+                        if (task.status === 'blocked') {
+                            urgentItems.push(`🔴 ${member.name}: "${task.title}" is BLOCKED`);
+                        }
+                    });
+                }
+            });
+            
+            if (urgentItems.length > 0) {
+                summary += `🚨 REQUIRES IMMEDIATE ATTENTION:\n`;
+                summary += `================================\n`;
+                urgentItems.forEach(item => {
+                    summary += `${item}\n`;
+                });
+                summary += `\n`;
+            }
+            
+            summary += `🤖 GENAI CURRENT STATE ANALYSIS PROMPTS:\n`;
+            summary += `========================================\n`;
+            summary += `Based on this comprehensive task state snapshot, please provide detailed analysis on:\n\n`;
+            
+            summary += `IMMEDIATE ACTIONS (Today/Tomorrow):\n`;
+            summary += `1. Which specific tasks need immediate intervention and why?\n`;
+            summary += `2. What blockers can be resolved today and how?\n`;
+            summary += `3. Which team members need urgent support or unblocking?\n`;
+            summary += `4. What's the optimal task prioritization for each person today?\n\n`;
+            
+            summary += `TASK-SKILL MATCHING:\n`;
+            summary += `5. Are current task assignments optimal based on team member skills?\n`;
+            summary += `6. Which tasks might benefit from reassignment or collaboration?\n`;
+            summary += `7. Where do you see skill gaps that need addressing?\n`;
+            summary += `8. What tasks should be deprioritized to focus on critical items?\n\n`;
+            
+            summary += `RISK & DEPENDENCY MANAGEMENT:\n`;
+            summary += `9. Which tasks have the highest risk of missing deadlines?\n`;
+            summary += `10. What dependency chains are most vulnerable?\n`;
+            summary += `11. Which blockers need escalation vs. team resolution?\n`;
+            summary += `12. What preventive measures should be taken for high-risk tasks?\n\n`;
+            
+            summary += `PROGRESS & EFFICIENCY:\n`;
+            summary += `13. Which tasks are progressing faster/slower than expected?\n`;
+            summary += `14. Where are we seeing scope creep or complexity increases?\n`;
+            summary += `15. What patterns suggest process improvements needed?\n`;
+            summary += `16. How should resource allocation be adjusted for optimal velocity?\n\n`;
+            
+            summary += `TEAM OPTIMIZATION:\n`;
+            summary += `17. Which team members might be over/under-utilized?\n`;
+            summary += `18. What collaboration opportunities could accelerate progress?\n`;
+            summary += `19. Where do you see signs of technical debt or quality concerns?\n`;
+            summary += `20. What recommendations do you have for sprint planning and task breakdown?\n`;
+            
+            return summary;
+        }
+
+        function copyTaskStateAnalysis() {
+            const analysisContent = document.getElementById('taskStateContent').textContent;
+            if (analysisContent === 'Load historical data files and click "Analyze Tasks" to generate comprehensive task state analysis for GenAI...') {
+                alert('Please generate an analysis first!');
+                return;
+            }
+
+            navigator.clipboard.writeText(analysisContent).then(() => {
+                alert('Task state analysis copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy. Please select and copy manually.');
+            });
+        }
+
+        function exportTaskStateAnalysis() {
+            const analysisContent = document.getElementById('taskStateContent').textContent;
+            if (analysisContent === 'Load historical data files and click "Analyze Tasks" to generate comprehensive task state analysis for GenAI...') {
+                alert('Please generate an analysis first!');
+                return;
+            }
+
+            const dataBlob = new Blob([analysisContent], {type: 'text/plain'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `task-state-analysis-${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportTaskStateCSV() {
+            if (taskStateData.length === 0) {
+                alert('Please load task state data first!');
+                return;
+            }
+
+            let csvContent = 'Date,Member Name,Role,Task Title,Task Status,Task Issue,Task Notes,Days in Progress,Status Changes,Technical Context,Business Impact,Estimated Effort,Required Skills,Dependencies\n';
+            
+            const taskTimelines = buildTaskTimelines();
+            
+            Object.entries(taskTimelines).forEach(([memberName, memberTasks]) => {
+                Object.entries(memberTasks).forEach(([taskTitle, timeline]) => {
+                    const latestEntry = timeline[timeline.length - 1];
+                    const firstEntry = timeline[0];
+                    const daysSinceStart = Math.ceil((new Date(latestEntry.date) - new Date(firstEntry.date)) / (1000 * 60 * 60 * 24)) + 1;
+                    const statusChanges = timeline.reduce((changes, entry, index) => 
+                        index > 0 && entry.status !== timeline[index - 1].status ? changes + 1 : changes, 0);
+                    
+                    const memberData = taskStateData[taskStateData.length - 1].teamData.find(m => m.name === memberName);
+                    const role = memberData ? memberData.role : 'Unknown';
+                    
+                    const understanding = latestEntry.understanding || {};
+                    
+                    csvContent += `"${latestEntry.date}","${memberName}","${role}","${taskTitle}","${latestEntry.status}","${(latestEntry.issue || '').replace(/"/g, '""')}","${(latestEntry.notes || '').replace(/"/g, '""')}",${daysSinceStart},${statusChanges},"${(understanding.technicalContext || '').replace(/"/g, '""')}","${(understanding.businessImpact || '').replace(/"/g, '""')}","${understanding.estimatedEffort || ''}","${(understanding.skillsRequired || []).join('; ')}","${(understanding.dependencies || []).join('; ')}"\n`;
+                });
+            });
+
+            const dataBlob = new Blob([csvContent], {type: 'text/csv'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `task-state-data-${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            alert(`Task state data exported as CSV`);
         }
     </script>
 </body>
