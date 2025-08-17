@@ -707,6 +707,38 @@
             }
         }
 
+        function generateBlockersField(member) {
+            if (!member.tasks || member.tasks.length === 0) {
+                return ''; // No blockers field if no tasks
+            }
+            
+            // Find all blocked tasks
+            const blockedTasks = member.tasks.filter(task => 
+                task.status === 'blocked' || 
+                task.status === 'partially-blocked' || 
+                (task.issue && task.issue.trim() !== '')
+            );
+            
+            if (blockedTasks.length === 0) {
+                return ''; // No blockers field if no blocked tasks
+            }
+            
+            // Create summary of blocked tasks
+            const blockerSummary = blockedTasks.map(task => {
+                const taskTitle = task.title || 'Untitled Task';
+                const issue = task.issue || 'Status: ' + task.status;
+                return `${taskTitle}: ${issue}`;
+            }).join('; ');
+            
+            return `
+                <div class="form-group">
+                    <label>🚧 Blockers/Issues:</label>
+                    <textarea readonly style="background-color: #f8f9fa; color: #495057;" 
+                              placeholder="No current blockers">${blockerSummary}</textarea>
+                </div>
+            `;
+        }
+
         function renderTeam() {
             const grid = document.getElementById('teamGrid');
             grid.innerHTML = '';
@@ -736,23 +768,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label>✅ What I did yesterday:</label>
-                        <textarea placeholder="Completed tasks from yesterday..."
-                                  onchange="updateMember(${member.id}, 'yesterday', this.value)">${member.yesterday}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>🎯 What I'm doing today:</label>
-                        <textarea placeholder="Today's planned tasks..."
-                                  onchange="updateMember(${member.id}, 'today', this.value)">${member.today}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>🚧 Blockers/Issues:</label>
-                        <textarea placeholder="Any blockers or issues..."
-                                  onchange="updateMember(${member.id}, 'blockers', this.value)">${member.blockers}</textarea>
-                    </div>
+                    ${generateBlockersField(member)}
 
                     <div class="form-group">
                         <label>📝 Additional Notes:</label>
@@ -911,10 +927,12 @@
         }
 
         function saveTodayDataCSV() {
-            let csvContent = 'Date,Member Name,Role,Status,Yesterday,Today,Blockers,Notes,Task Title,Task Status,Task Issue,Task Notes\n';
+            const currentDate = new Date().toISOString().split('T')[0];
+            let csvContent = 'Date,Member Name,Role,Status,Notes,Task Blockers,Task Title,Task Status,Task Issue,Task Notes\n';
             
             teamData.forEach(member => {
-                const baseRow = `"${currentDate}","${member.name}","${member.role}","${member.status}","${(member.yesterday || '').replace(/"/g, '""')}","${(member.today || '').replace(/"/g, '""')}","${(member.blockers || '').replace(/"/g, '""')}","${(member.notes || '').replace(/"/g, '""')}"`;
+                const taskBlockers = getTaskBlockersSummary(member);
+                const baseRow = `"${currentDate}","${member.name}","${member.role}","${member.status}","${(member.notes || '').replace(/"/g, '""')}","${taskBlockers.replace(/"/g, '""')}"`;
                 
                 if (member.tasks && member.tasks.length > 0) {
                     member.tasks.forEach(task => {
@@ -934,6 +952,28 @@
             URL.revokeObjectURL(url);
             
             alert(`Today's data saved as CSV: team-progress-${currentDate}.csv`);
+        }
+
+        function getTaskBlockersSummary(member) {
+            if (!member.tasks || member.tasks.length === 0) {
+                return '';
+            }
+            
+            const blockedTasks = member.tasks.filter(task => 
+                task.status === 'blocked' || 
+                task.status === 'partially-blocked' || 
+                (task.issue && task.issue.trim() !== '')
+            );
+            
+            if (blockedTasks.length === 0) {
+                return '';
+            }
+            
+            return blockedTasks.map(task => {
+                const taskTitle = task.title || 'Untitled Task';
+                const issue = task.issue || 'Status: ' + task.status;
+                return `${taskTitle}: ${issue}`;
+            }).join('; ');
         }
 
         function loadData() {
@@ -1097,16 +1137,18 @@
                 summary += `${index + 1}. ${member.name.toUpperCase()} (${member.role})\n`;
                 summary += `   Status: ${member.status.toUpperCase().replace('-', ' ')}\n`;
                 
-                if (member.yesterday.trim()) {
-                    summary += `   ✅ Yesterday: ${member.yesterday.trim()}\n`;
-                }
+                // Show task-based blockers if any tasks are blocked
+                const blockedTasks = member.tasks ? member.tasks.filter(task => 
+                    task.status === 'blocked' || task.status === 'partially-blocked'
+                ) : [];
                 
-                if (member.today.trim()) {
-                    summary += `   🎯 Today: ${member.today.trim()}\n`;
-                }
-                
-                if (member.blockers.trim()) {
-                    summary += `   🚧 Blockers: ${member.blockers.trim()}\n`;
+                if (blockedTasks.length > 0) {
+                    summary += `   🚧 Blockers: `;
+                    const blockerSummary = blockedTasks.map(task => {
+                        const issue = task.issue && task.issue.trim() ? task.issue.trim() : 'Task blocked';
+                        return `${task.title} (${issue})`;
+                    }).join('; ');
+                    summary += `${blockerSummary}\n`;
                 }
                 
                 if (member.notes.trim()) {
@@ -1146,8 +1188,17 @@
                     if (member.status === 'partially-blocked') {
                         summary += `🟡 ${member.name} is PARTIALLY BLOCKED\n`;
                     }
-                    if (member.blockers.trim()) {
-                        summary += `⚠️  ${member.name}: ${member.blockers.trim()}\n`;
+                    // Show task-based blockers
+                    const blockedTasks = member.tasks ? member.tasks.filter(task => 
+                        task.status === 'blocked' || task.status === 'partially-blocked'
+                    ) : [];
+                    
+                    if (blockedTasks.length > 0) {
+                        const blockerSummary = blockedTasks.map(task => {
+                            const issue = task.issue && task.issue.trim() ? task.issue.trim() : 'Task blocked';
+                            return `${task.title} (${issue})`;
+                        }).join('; ');
+                        summary += `⚠️  ${member.name}: ${blockerSummary}\n`;
                     }
                 });
                 summary += `\n`;
@@ -1381,9 +1432,6 @@
                     return member ? {
                         date: day.date,
                         status: member.status,
-                        blockers: member.blockers,
-                        today: member.today,
-                        yesterday: member.yesterday,
                         tasks: member.tasks || [] // Include tasks in the analysis
                     } : null;
                 }).filter(Boolean);
@@ -1478,9 +1526,15 @@
             const allBlockers = [];
             weeklyData.forEach(day => {
                 day.teamData.forEach(member => {
-                    if (member.blockers.trim()) {
-                        allBlockers.push(member.blockers.trim().toLowerCase());
-                    }
+                    // Get task-based blockers
+                    const blockedTasks = member.tasks ? member.tasks.filter(task => 
+                        task.status === 'blocked' || task.status === 'partially-blocked'
+                    ) : [];
+                    
+                    blockedTasks.forEach(task => {
+                        const issue = task.issue && task.issue.trim() ? task.issue.trim() : 'Task blocked';
+                        allBlockers.push(issue.toLowerCase());
+                    });
                 });
             });
 
@@ -1588,13 +1642,14 @@
             }
 
             const weekStart = document.getElementById('weekStartDate').value;
-            let csvContent = 'Date,Member Name,Role,Status,Yesterday,Today,Blockers,Notes,Task Title,Task Status,Task Issue,Task Notes,Day of Week\n';
+            let csvContent = 'Date,Member Name,Role,Status,Notes,Task Blockers,Task Title,Task Status,Task Issue,Task Notes,Day of Week\n';
             
             weeklyData.forEach(dayData => {
                 const dayName = new Date(dayData.date).toLocaleDateString('en-US', { weekday: 'long' });
                 
                 dayData.teamData.forEach(member => {
-                    const baseRow = `"${dayData.date}","${member.name}","${member.role}","${member.status}","${(member.yesterday || '').replace(/"/g, '""')}","${(member.today || '').replace(/"/g, '""')}","${(member.blockers || '').replace(/"/g, '""')}","${(member.notes || '').replace(/"/g, '""')}"`;
+                    const taskBlockers = getTaskBlockersSummary(member);
+                    const baseRow = `"${dayData.date}","${member.name}","${member.role}","${member.status}","${(member.notes || '').replace(/"/g, '""')}","${taskBlockers.replace(/"/g, '""')}"`;
                     
                     if (member.tasks && member.tasks.length > 0) {
                         member.tasks.forEach(task => {
@@ -1620,9 +1675,6 @@
         function clearToday() {
             if (confirm('Are you sure you want to clear today\'s data? This will remove all progress notes but keep team members.')) {
                 teamData.forEach(member => {
-                    member.yesterday = '';
-                    member.today = '';
-                    member.blockers = '';
                     member.notes = '';
                     member.status = 'active';
                     // Clear task details but keep the tasks
@@ -2089,8 +2141,18 @@
                 summary += `${member.name.toUpperCase()} (${member.role}):\n`;
                 summary += `Status: ${member.status.toUpperCase()}\n`;
                 
-                if (member.blockers && member.blockers.trim()) {
-                    summary += `🚧 Current Blockers: ${member.blockers.trim()}\n`;
+                // Show task-based blockers if any tasks are blocked
+                const blockedTasks = member.tasks ? member.tasks.filter(task => 
+                    task.status === 'blocked' || task.status === 'partially-blocked'
+                ) : [];
+                
+                if (blockedTasks.length > 0) {
+                    summary += `🚧 Current Blockers: `;
+                    const blockerSummary = blockedTasks.map(task => {
+                        const issue = task.issue && task.issue.trim() ? task.issue.trim() : 'Task blocked';
+                        return `${task.title} (${issue})`;
+                    }).join('; ');
+                    summary += `${blockerSummary}\n`;
                 }
                 
                 if (member.tasks && member.tasks.length > 0) {
