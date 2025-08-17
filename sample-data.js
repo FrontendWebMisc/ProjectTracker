@@ -1,12 +1,24 @@
 // Sample data configuration for Team Progress Tracker
 // Edit this file to customize your team members and initial tasks
+// User profile details are now in user-profile.js
 
 function initializeSampleData() {
+    // Get user profile from external file
+    const userProfile = typeof USER_PROFILE !== 'undefined' ? USER_PROFILE : {
+        id: 1,
+        name: 'User',
+        role: 'Team Member'
+    };
+
     return [
         {
-            id: 1,
-            name: 'Amarnath',
-            role: 'Frontend Developer',
+            id: userProfile.id,
+            name: userProfile.name,
+            role: userProfile.role,
+            title: userProfile.title || userProfile.role,
+            department: userProfile.department || '',
+            skillsets: userProfile.skillsets || [],
+            languages: userProfile.languages || [],
             status: 'active',
             yesterday: 'Completed user authentication UI components',
             today: 'Working on dashboard responsive design',
