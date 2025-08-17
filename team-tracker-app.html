@@ -453,16 +453,24 @@
         <div class="main-content">
             <div class="storage-info">
                 <h4>📁 File Storage Instructions</h4>
-                <p>This app automatically saves daily progress as JSON files. Use the "Save Today's Data" button to download today's data. Load previous days using "Load Data". For best organization, create a "team-data" folder to store all your daily files.</p>
+                <p>This app saves daily progress in both JSON and CSV formats. JSON preserves all data for re-loading, while CSV is perfect for spreadsheet analysis. Use "Load Data" to import either format. For best organization, create a "team-data" folder to store all your files.</p>
             </div>
 
             <div class="control-panel">
                 <button class="btn" onclick="addMember()">➕ Add Member</button>
-                <button class="btn success" onclick="saveTodayData()">💾 Save Today's Data</button>
+                
+                <!-- Save/Export Section -->
+                <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                    <button class="btn success" onclick="saveTodayData()">💾 JSON</button>
+                    <button class="btn success" onclick="saveTodayDataCSV()">📊 CSV</button>
+                </div>
+                
+                <!-- Load/Import Section -->
                 <div class="file-input-wrapper">
-                    <input type="file" id="loadDataFile" class="file-input" accept=".json" onchange="loadData()">
+                    <input type="file" id="loadDataFile" class="file-input" accept=".json,.csv" onchange="loadData()">
                     <button class="btn info" onclick="document.getElementById('loadDataFile').click()">📂 Load Data</button>
                 </div>
+                
                 <button class="btn warning" onclick="generateDailySummary()">📊 Daily Summary</button>
                 <button class="btn purple" onclick="showWeeklySummary()">📈 Weekly Summary</button>
                 <button class="btn small" onclick="clearToday()">🗑️ Clear Today</button>
@@ -537,15 +545,16 @@
             </div>
             <div id="weeklyFiles" style="margin-bottom: 20px;"></div>
             <div class="form-group">
-                <label>Load Weekly Data Files (select multiple daily JSON files):</label>
-                <input type="file" id="weeklyDataFiles" multiple accept=".json" onchange="loadWeeklyFiles()">
+                <label>Load Weekly Data Files (select multiple daily JSON or CSV files):</label>
+                <input type="file" id="weeklyDataFiles" multiple accept=".json,.csv" onchange="loadWeeklyFiles()">
             </div>
             <div class="summary-content" id="weeklySummaryContent" style="max-height: 300px;">
                 Select week start date and load daily data files to generate weekly summary...
             </div>
-            <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button class="btn small" onclick="copyWeeklySummary()">📋 Copy Weekly Summary</button>
-                <button class="btn small" onclick="exportWeeklySummary()">💾 Export Weekly Summary</button>
+            <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn small" onclick="copyWeeklySummary()">📋 Copy Summary</button>
+                <button class="btn small" onclick="exportWeeklySummary()">💾 Export TXT</button>
+                <button class="btn small" onclick="exportWeeklySummaryCSV()">📊 Export CSV</button>
             </div>
         </div>
     </div>
@@ -863,6 +872,32 @@
             alert(`Today's data saved as: team-progress-${currentDate}.json\nSave this file in your team-data folder.`);
         }
 
+        function saveTodayDataCSV() {
+            let csvContent = 'Date,Member Name,Role,Status,Yesterday,Today,Blockers,Notes,Task Title,Task Status,Task Issue,Task Notes\n';
+            
+            teamData.forEach(member => {
+                const baseRow = `"${currentDate}","${member.name}","${member.role}","${member.status}","${(member.yesterday || '').replace(/"/g, '""')}","${(member.today || '').replace(/"/g, '""')}","${(member.blockers || '').replace(/"/g, '""')}","${(member.notes || '').replace(/"/g, '""')}"`;
+                
+                if (member.tasks && member.tasks.length > 0) {
+                    member.tasks.forEach(task => {
+                        csvContent += `${baseRow},"${(task.title || '').replace(/"/g, '""')}","${task.status || ''}","${(task.issue || '').replace(/"/g, '""')}","${(task.notes || '').replace(/"/g, '""')}"\n`;
+                    });
+                } else {
+                    csvContent += `${baseRow},"","","",""\n`;
+                }
+            });
+
+            const dataBlob = new Blob([csvContent], {type: 'text/csv'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `team-progress-${currentDate}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            alert(`Today's data saved as CSV: team-progress-${currentDate}.csv`);
+        }
+
         function loadData() {
             const fileInput = document.getElementById('loadDataFile');
             const file = fileInput.files[0];
@@ -870,18 +905,26 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        if (data.teamData) {
-                            teamData = data.teamData;
-                            memberIdCounter = Math.max(...teamData.map(m => m.id), 0) + 1;
-                            renderTeam();
-                            alert(`Data loaded from ${data.date || 'unknown date'}`);
-                        } else {
-                            alert('Invalid file format');
+                    const content = e.target.result;
+                    
+                    // Check if it's a CSV file by extension or content
+                    if (file.name.toLowerCase().endsWith('.csv') || content.startsWith('Date,Member Name,Role')) {
+                        loadCSVData(content);
+                    } else {
+                        // Try to parse as JSON
+                        try {
+                            const data = JSON.parse(content);
+                            if (data.teamData) {
+                                teamData = data.teamData;
+                                memberIdCounter = Math.max(...teamData.map(m => m.id), 0) + 1;
+                                renderTeam();
+                                alert(`JSON data loaded from ${data.date || 'unknown date'}`);
+                            } else {
+                                alert('Invalid JSON file format');
+                            }
+                        } catch (error) {
+                            alert('Error reading file: ' + error.message);
                         }
-                    } catch (error) {
-                        alert('Error reading file: ' + error.message);
                     }
                 };
                 reader.readAsText(file);
@@ -889,6 +932,106 @@
             
             // Reset file input
             fileInput.value = '';
+        }
+
+        function loadCSVData(csvContent) {
+            try {
+                const lines = csvContent.split('\n');
+                const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
+                
+                if (!headers.includes('Member Name') || !headers.includes('Role')) {
+                    alert('Invalid CSV format. Required columns: Member Name, Role');
+                    return;
+                }
+                
+                const membersMap = new Map();
+                let maxId = 0;
+                
+                // Parse CSV data
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const values = parseCSVLine(line);
+                    if (values.length < headers.length) continue;
+                    
+                    const rowData = {};
+                    headers.forEach((header, index) => {
+                        rowData[header.trim()] = values[index] || '';
+                    });
+                    
+                    const memberName = rowData['Member Name'];
+                    if (!memberName) continue;
+                    
+                    // Initialize member if not exists
+                    if (!membersMap.has(memberName)) {
+                        maxId++;
+                        membersMap.set(memberName, {
+                            id: maxId,
+                            name: memberName,
+                            role: rowData['Role'] || 'Team Member',
+                            status: rowData['Status'] || 'active',
+                            yesterday: rowData['Yesterday'] || '',
+                            today: rowData['Today'] || '',
+                            blockers: rowData['Blockers'] || '',
+                            notes: rowData['Notes'] || '',
+                            tasks: [],
+                            lastUpdated: new Date().toISOString()
+                        });
+                    }
+                    
+                    // Add task if task data exists
+                    const member = membersMap.get(memberName);
+                    const taskTitle = rowData['Task Title'];
+                    if (taskTitle && taskTitle.trim()) {
+                        member.tasks.push({
+                            title: taskTitle,
+                            status: rowData['Task Status'] || 'active',
+                            issue: rowData['Task Issue'] || '',
+                            notes: rowData['Task Notes'] || ''
+                        });
+                    }
+                }
+                
+                teamData = Array.from(membersMap.values());
+                memberIdCounter = maxId + 1;
+                renderTeam();
+                alert(`CSV data loaded successfully! ${teamData.length} team members imported.`);
+                
+            } catch (error) {
+                alert('Error parsing CSV file: ' + error.message);
+            }
+        }
+
+        function parseCSVLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+            let i = 0;
+            
+            while (i < line.length) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    if (inQuotes && line[i + 1] === '"') {
+                        current += '"';
+                        i += 2;
+                    } else {
+                        inQuotes = !inQuotes;
+                        i++;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    values.push(current);
+                    current = '';
+                    i++;
+                } else {
+                    current += char;
+                    i++;
+                }
+            }
+            
+            values.push(current);
+            return values;
         }
 
         function generateDailySummary() {
@@ -1007,10 +1150,21 @@
             Array.from(files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    const content = e.target.result;
+                    
                     try {
-                        const data = JSON.parse(e.target.result);
-                        if (data.teamData && data.date) {
-                            weeklyData.push(data);
+                        // Check if it's a CSV file
+                        if (file.name.toLowerCase().endsWith('.csv') || content.startsWith('Date,Member Name,Role')) {
+                            const dailyDataArray = parseCSVToWeeklyData(content, file.name);
+                            if (dailyDataArray && Array.isArray(dailyDataArray)) {
+                                weeklyData.push(...dailyDataArray);
+                            }
+                        } else {
+                            // Try to parse as JSON
+                            const data = JSON.parse(content);
+                            if (data.teamData && data.date) {
+                                weeklyData.push(data);
+                            }
                         }
                     } catch (error) {
                         console.error('Error reading file:', file.name, error);
@@ -1025,6 +1179,102 @@
                 };
                 reader.readAsText(file);
             });
+        }
+
+        function parseCSVToWeeklyData(csvContent, fileName) {
+            try {
+                const lines = csvContent.split('\n');
+                const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
+                
+                if (!headers.includes('Member Name') || !headers.includes('Date')) {
+                    console.error('Invalid CSV format for weekly data:', fileName);
+                    return null;
+                }
+                
+                // Group data by date
+                const dateGroups = new Map();
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const values = parseCSVLine(line);
+                    if (values.length < headers.length) continue;
+                    
+                    const rowData = {};
+                    headers.forEach((header, index) => {
+                        rowData[header.trim()] = values[index] || '';
+                    });
+                    
+                    const date = rowData['Date'];
+                    const memberName = rowData['Member Name'];
+                    
+                    if (!date || !memberName) continue;
+                    
+                    // Initialize date group if not exists
+                    if (!dateGroups.has(date)) {
+                        dateGroups.set(date, new Map());
+                    }
+                    
+                    const dayMembers = dateGroups.get(date);
+                    
+                    // Initialize member if not exists
+                    if (!dayMembers.has(memberName)) {
+                        dayMembers.set(memberName, {
+                            id: dayMembers.size + 1,
+                            name: memberName,
+                            role: rowData['Role'] || 'Team Member',
+                            status: rowData['Status'] || 'active',
+                            yesterday: rowData['Yesterday'] || '',
+                            today: rowData['Today'] || '',
+                            blockers: rowData['Blockers'] || '',
+                            notes: rowData['Notes'] || '',
+                            tasks: [],
+                            lastUpdated: new Date().toISOString()
+                        });
+                    }
+                    
+                    // Add task if task data exists
+                    const member = dayMembers.get(memberName);
+                    const taskTitle = rowData['Task Title'];
+                    if (taskTitle && taskTitle.trim()) {
+                        // Check if task already exists for this member
+                        const existingTask = member.tasks.find(t => t.title === taskTitle);
+                        if (!existingTask) {
+                            member.tasks.push({
+                                title: taskTitle,
+                                status: rowData['Task Status'] || 'active',
+                                issue: rowData['Task Issue'] || '',
+                                notes: rowData['Task Notes'] || ''
+                            });
+                        }
+                    }
+                }
+                
+                // Convert to the expected format - create separate entries for each date
+                const results = [];
+                for (const [date, dayMembers] of dateGroups) {
+                    const teamData = Array.from(dayMembers.values());
+                    results.push({
+                        date: date,
+                        timestamp: new Date().toISOString(),
+                        teamData: teamData,
+                        summary: {
+                            total: teamData.length,
+                            active: teamData.filter(m => m.status === 'active').length,
+                            blocked: teamData.filter(m => m.status === 'blocked').length,
+                            partiallyBlocked: teamData.filter(m => m.status === 'partially-blocked').length,
+                            reviewing: teamData.filter(m => m.status === 'reviewing').length
+                        }
+                    });
+                }
+                
+                return results;
+                
+            } catch (error) {
+                console.error('Error parsing CSV for weekly data:', fileName, error);
+                return null;
+            }
         }
 
         function updateWeeklyFilesDisplay() {
@@ -1291,6 +1541,42 @@
             link.download = `weekly-summary-${weekStart}.txt`;
             link.click();
             URL.revokeObjectURL(url);
+        }
+
+        function exportWeeklySummaryCSV() {
+            if (weeklyData.length === 0) {
+                alert('Please load weekly data first!');
+                return;
+            }
+
+            const weekStart = document.getElementById('weekStartDate').value;
+            let csvContent = 'Date,Member Name,Role,Status,Yesterday,Today,Blockers,Notes,Task Title,Task Status,Task Issue,Task Notes,Day of Week\n';
+            
+            weeklyData.forEach(dayData => {
+                const dayName = new Date(dayData.date).toLocaleDateString('en-US', { weekday: 'long' });
+                
+                dayData.teamData.forEach(member => {
+                    const baseRow = `"${dayData.date}","${member.name}","${member.role}","${member.status}","${(member.yesterday || '').replace(/"/g, '""')}","${(member.today || '').replace(/"/g, '""')}","${(member.blockers || '').replace(/"/g, '""')}","${(member.notes || '').replace(/"/g, '""')}"`;
+                    
+                    if (member.tasks && member.tasks.length > 0) {
+                        member.tasks.forEach(task => {
+                            csvContent += `${baseRow},"${(task.title || '').replace(/"/g, '""')}","${task.status || ''}","${(task.issue || '').replace(/"/g, '""')}","${(task.notes || '').replace(/"/g, '""')}","${dayName}"\n`;
+                        });
+                    } else {
+                        csvContent += `${baseRow},"","","","","${dayName}"\n`;
+                    }
+                });
+            });
+
+            const dataBlob = new Blob([csvContent], {type: 'text/csv'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `weekly-data-${weekStart}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            alert(`Weekly data exported as CSV: weekly-data-${weekStart}.csv`);
         }
 
         function clearToday() {
