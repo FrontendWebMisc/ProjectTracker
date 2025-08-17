@@ -59,7 +59,7 @@ function initializeSampleData() {
 }
 ```
 
-## Productivity Tips
+## Important Points
 
 *   **Regular Updates:** Encourage team members to update their status and progress throughout the day, not just during stand-up. This will give you a more accurate view of the team's progress.
 *   **Task Tracking:** Use the task tracking feature to break down larger projects into manageable pieces and track progress on each item.
@@ -67,3 +67,12 @@ function initializeSampleData() {
 *   **Leverage AI Summaries:** Paste the generated summaries into an AI to get insights into your team's productivity, identify trends, and get suggestions for improvement.
 *   **Weekly Review:** Use the weekly summary to review the team's progress over the past week and plan for the week ahead.
 *   **Consistent Data Storage:** Keep all your daily JSON files in a dedicated `team-data` folder to make it easy to generate weekly summaries.
+
+## Productivity Tips
+
+*   Rest of the task details you can copy paste from Jira. This will not take much time.
+*   With the help of this app, all you need to do is to add some extra details based on your task understanding.
+*   You must pay attention during sprint refinement calls or reach out to the concerned person who has helped in that task creation or task assignee to understand the task well.
+*   This might take some effort first to understand the task and then say 10 to 15 minutes per task to edit it in the `sample-data.js` task array.
+*   Only on a daily basis you just have to keep editing it.
+*   You can even share the csv with your team mates and ask them to edit it if you're not available on the dsu calls.
