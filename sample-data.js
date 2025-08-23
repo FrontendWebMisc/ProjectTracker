@@ -51,25 +51,6 @@ function initializeSampleData() {
                             '• Optimizing component sizing and spacing for different screens',
                             '• Testing across various devices and browsers for consistency'
                         ],
-                        technicalContext: 'React-based frontend with CSS modules and media queries',
-                        businessImpact: 'Improves user experience across devices, increases accessibility',
-                        estimatedEffort: '3-4 days',
-                        dependencies: ['UX wireframes', 'Design system components'],
-                        skillsRequired: ['React', 'CSS3', 'Responsive Design'],
-                        priority: 'high',
-                        complexity: 'medium',
-                        riskLevel: 'low',
-                        blockerHistory: [],
-                        progressMetrics: {
-                            estimatedHours: 24,
-                            hoursSpent: 8,
-                            completionPercentage: 35
-                        },
-                        assignmentHistory: [{
-                            assignedTo: 'Amarnath',
-                            assignedDate: '2024-01-15',
-                            reason: 'Expert in React and responsive design'
-                        }]
                     }
                 },
                 {
@@ -100,30 +81,6 @@ function initializeSampleData() {
                             '• Adding password change and security settings',
                             '• Integrating with user authentication system'
                         ],
-                        technicalContext: 'React frontend with form validation and file upload capabilities',
-                        businessImpact: 'Allows users to manage their account information and preferences',
-                        estimatedEffort: '5-6 days',
-                        dependencies: ['Design assets from UX team', 'Backend user API'],
-                        skillsRequired: ['React', 'Form handling', 'File upload', 'API integration'],
-                        priority: 'medium',
-                        complexity: 'high',
-                        riskLevel: 'medium',
-                        blockerHistory: [{
-                            date: '2024-01-16',
-                            blocker: 'Waiting for design assets from UX team',
-                            impact: 'Cannot proceed with UI implementation',
-                            resolution: 'pending'
-                        }],
-                        progressMetrics: {
-                            estimatedHours: 40,
-                            hoursSpent: 12,
-                            completionPercentage: 20
-                        },
-                        assignmentHistory: [{
-                            assignedTo: 'Amarnath',
-                            assignedDate: '2024-01-14',
-                            reason: 'Frontend expertise and form handling experience'
-                        }]
                     }
                 },
                 {
@@ -153,25 +110,6 @@ function initializeSampleData() {
                             '• Implementing notification state management',
                             '• Adding sound and visual notification indicators'
                         ],
-                        technicalContext: 'React frontend with WebSocket integration and state management',
-                        businessImpact: 'Improves user engagement and provides instant communication',
-                        estimatedEffort: '4-5 days',
-                        dependencies: ['WebSocket server setup', 'Notification service API'],
-                        skillsRequired: ['React', 'WebSocket', 'State Management', 'Real-time Systems'],
-                        priority: 'high',
-                        complexity: 'high',
-                        riskLevel: 'medium',
-                        blockerHistory: [],
-                        progressMetrics: {
-                            estimatedHours: 32,
-                            hoursSpent: 12,
-                            completionPercentage: 40
-                        },
-                        assignmentHistory: [{
-                            assignedTo: 'Amarnath',
-                            assignedDate: '2024-01-18',
-                            reason: 'Frontend expertise in React and real-time systems'
-                        }]
                     }
                 },
                 {
@@ -201,25 +139,6 @@ function initializeSampleData() {
                             '• Implementing data filtering and aggregation',
                             '• Adding export and sharing capabilities'
                         ],
-                        technicalContext: 'React with Chart.js, D3.js, and data processing libraries',
-                        businessImpact: 'Enables data-driven decision making and business insights',
-                        estimatedEffort: '6-7 days',
-                        dependencies: ['Analytics API', 'Chart library selection'],
-                        skillsRequired: ['React', 'D3.js', 'Data Visualization', 'Performance Optimization'],
-                        priority: 'medium',
-                        complexity: 'high',
-                        riskLevel: 'low',
-                        blockerHistory: [],
-                        progressMetrics: {
-                            estimatedHours: 48,
-                            hoursSpent: 42,
-                            completionPercentage: 85
-                        },
-                        assignmentHistory: [{
-                            assignedTo: 'Amarnath',
-                            assignedDate: '2024-01-08',
-                            reason: 'Experience with data visualization and React'
-                        }]
                     }
                 }
             ],
@@ -307,31 +226,6 @@ function initializeSampleData() {
                             '• Adding webhook handlers for payment status updates',
                             '• Creating payment confirmation and receipt system'
                         ],
-                        technicalContext: 'Node.js backend with Express framework and payment gateway SDK',
-                        businessImpact: 'Enables monetization and secure transaction processing',
-                        estimatedEffort: '4-5 days',
-                        dependencies: ['Payment provider API keys', 'SSL certificates'],
-                        skillsRequired: ['Node.js', 'Express.js', 'Payment APIs', 'Security protocols'],
-                        priority: 'critical',
-                        complexity: 'high',
-                        riskLevel: 'high',
-                        blockerHistory: [{
-                            date: '2024-01-17',
-                            blocker: 'Waiting for payment provider API keys',
-                            impact: 'Cannot implement payment processing functionality',
-                            resolution: 'pending',
-                            escalatedTo: 'Product Manager'
-                        }],
-                        progressMetrics: {
-                            estimatedHours: 32,
-                            hoursSpent: 16,
-                            completionPercentage: 40
-                        },
-                        assignmentHistory: [{
-                            assignedTo: 'Bob Smith',
-                            assignedDate: '2024-01-10',
-                            reason: 'Backend expertise and payment system experience'
-                        }]
                     }
                 },
                 {
@@ -361,25 +255,6 @@ function initializeSampleData() {
                             '• Adding logging for error tracking and debugging',
                             '• Setting up proper HTTP status codes for different error types'
                         ],
-                        technicalContext: 'Express.js middleware and error handling patterns',
-                        businessImpact: 'Improves API reliability and debugging capabilities',
-                        estimatedEffort: '2-3 days',
-                        dependencies: ['Logging framework setup'],
-                        skillsRequired: ['Node.js', 'Express.js', 'Error handling patterns', 'Logging'],
-                        priority: 'high',
-                        complexity: 'medium',
-                        riskLevel: 'low',
-                        blockerHistory: [],
-                        progressMetrics: {
-                            estimatedHours: 20,
-                            hoursSpent: 6,
-                            completionPercentage: 30
-                        },
-                        assignmentHistory: [{
-                            assignedTo: 'Bob Smith',
-                            assignedDate: '2024-01-12',
-                            reason: 'Backend lead responsible for API infrastructure'
-                        }]
                     }
                 },
                 {
@@ -413,25 +288,6 @@ function initializeSampleData() {
                             '• Implementing repository layer with Spring Data JPA',
                             '• Building REST controllers with proper HTTP mappings'
                         ],
-                        technicalContext: 'Java Spring Boot with H2 database, JPA, and Swagger documentation',
-                        businessImpact: 'Enables efficient employee data management and HR operations',
-                        estimatedEffort: '5-6 days',
-                        dependencies: ['Database schema approval', 'API specification review'],
-                        skillsRequired: ['Java', 'Spring Boot', 'JPA', 'REST APIs', 'Unit Testing'],
-                        priority: 'high',
-                        complexity: 'medium',
-                        riskLevel: 'low',
-                        blockerHistory: [],
-                        progressMetrics: {
-                            estimatedHours: 40,
-                            hoursSpent: 28,
-                            completionPercentage: 70
-                        },
-                        assignmentHistory: [{
-                            assignedTo: 'Bob Smith',
-                            assignedDate: '2024-01-09',
-                            reason: 'Java backend expertise and Spring Boot experience'
-                        }]
                     }
                 },
                 {
@@ -465,31 +321,6 @@ function initializeSampleData() {
                             '• Implementing token generation and validation services',
                             '• Setting up OAuth2 providers for social authentication'
                         ],
-                        technicalContext: 'Java Spring Boot with Spring Security, JWT, OAuth2, and PostgreSQL',
-                        businessImpact: 'Provides secure centralized authentication for all application services',
-                        estimatedEffort: '7-8 days',
-                        dependencies: ['Security team approval', 'OAuth2 provider setup'],
-                        skillsRequired: ['Java', 'Spring Security', 'JWT', 'OAuth2', 'Security Protocols'],
-                        priority: 'critical',
-                        complexity: 'high',
-                        riskLevel: 'high',
-                        blockerHistory: [{
-                            date: '2024-01-19',
-                            blocker: 'Waiting for security team approval on JWT implementation',
-                            impact: 'Cannot proceed with token validation implementation',
-                            resolution: 'pending',
-                            escalatedTo: 'Security Team Lead'
-                        }],
-                        progressMetrics: {
-                            estimatedHours: 56,
-                            hoursSpent: 32,
-                            completionPercentage: 55
-                        },
-                        assignmentHistory: [{
-                            assignedTo: 'Bob Smith',
-                            assignedDate: '2024-01-11',
-                            reason: 'Security expertise and microservices architecture experience'
-                        }]
                     }
                 }
             ],
@@ -578,25 +409,6 @@ function initializeSampleData() {
                             '• Validating error handling and edge cases',
                             '• Ensuring proper documentation and test coverage'
                         ],
-                        technicalContext: 'Node.js/Express backend code review with focus on security',
-                        businessImpact: 'Ensures code quality and security before production deployment',
-                        estimatedEffort: '1-2 days',
-                        dependencies: ['Completed payment integration code'],
-                        skillsRequired: ['Code review', 'Security analysis', 'Node.js', 'Payment systems'],
-                        priority: 'critical',
-                        complexity: 'medium',
-                        riskLevel: 'medium',
-                        blockerHistory: [],
-                        progressMetrics: {
-                            estimatedHours: 12,
-                            hoursSpent: 4,
-                            completionPercentage: 35
-                        },
-                        assignmentHistory: [{
-                            assignedTo: 'Carol Davis',
-                            assignedDate: '2024-01-15',
-                            reason: 'Senior QA with security analysis expertise'
-                        }]
                     }
                 },
                 {
@@ -626,25 +438,6 @@ function initializeSampleData() {
                             '• Checking accessibility compliance (WCAG guidelines)',
                             '• Performance testing for loading times and interactions'
                         ],
-                        technicalContext: 'Manual and automated testing using browser dev tools and testing frameworks',
-                        businessImpact: 'Ensures consistent user experience across all platforms',
-                        estimatedEffort: '2-3 days',
-                        dependencies: ['Completed dashboard responsive design'],
-                        skillsRequired: ['UI Testing', 'Cross-browser testing', 'Accessibility testing', 'Performance testing'],
-                        priority: 'high',
-                        complexity: 'medium',
-                        riskLevel: 'low',
-                        blockerHistory: [],
-                        progressMetrics: {
-                            estimatedHours: 24,
-                            hoursSpent: 14,
-                            completionPercentage: 60
-                        },
-                        assignmentHistory: [{
-                            assignedTo: 'Carol Davis',
-                            assignedDate: '2024-01-13',
-                            reason: 'Expert in UI testing and accessibility compliance'
-                        }]
                     }
                 },
                 {
@@ -676,25 +469,6 @@ function initializeSampleData() {
                             '• Creating test data builders and fixtures',
                             '• Implementing API contract validation tests'
                         ],
-                        technicalContext: 'Spring Boot Test framework with JUnit 5, MockMvc, and TestContainers',
-                        businessImpact: 'Ensures API reliability and prevents regression bugs in production',
-                        estimatedEffort: '4-5 days',
-                        dependencies: ['Spring Boot API completion', 'Test environment setup'],
-                        skillsRequired: ['Java', 'JUnit', 'Spring Boot Test', 'API Testing', 'TestContainers'],
-                        priority: 'high',
-                        complexity: 'medium',
-                        riskLevel: 'low',
-                        blockerHistory: [],
-                        progressMetrics: {
-                            estimatedHours: 32,
-                            hoursSpent: 8,
-                            completionPercentage: 25
-                        },
-                        assignmentHistory: [{
-                            assignedTo: 'Carol Davis',
-                            assignedDate: '2024-01-16',
-                            reason: 'API testing expertise and Spring Boot testing experience'
-                        }]
                     }
                 }
             ],
